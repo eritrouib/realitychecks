@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://realitychecks.app/sitemap.xml
