@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reality Checks — Free Tools That Make You Think</title>
+<meta name="description" content="7 free, research-backed calculators that give you an honest look at your habits, health, money and time. No sign-up. No fluff. Just reality.">
+<meta property="og:title" content="Reality Checks — Free Tools That Make You Think">
+<meta property="og:description" content="7 free tools covering sleep, hydration, social media, meetings, salary, coffee and life expectancy. Built on real research.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f7f5f0;
+  --surface: #ffffff;
+  --surface2: #f0ede6;
+  --border: rgba(30,20,5,0.1);
+  --border2: rgba(30,20,5,0.18);
+  --text: #1a1510;
+  --text2: #6b5e4e;
+  --text3: #9c8c7a;
+  --accent: #1a1510;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+/* NAV */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(247,245,240,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: .85rem 2rem;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.nav-logo {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.3rem;
+  color: var(--text);
+  text-decoration: none;
+}
+.nav-logo em { font-style: italic; color: var(--text3); }
+.nav-cta {
+  font-size: 13px; color: var(--text2);
+  text-decoration: none; border: 1px solid var(--border2);
+  padding: .4rem .9rem; border-radius: 20px;
+  transition: background .15s;
+}
+.nav-cta:hover { background: var(--surface2); }
+
+/* HERO */
+.hero {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 6rem 1.5rem 4rem;
+  text-align: center;
+}
+.hero-tag {
+  display: inline-block;
+  font-size: 11px; font-weight: 500;
+  letter-spacing: .1em; text-transform: uppercase;
+  color: var(--text3); background: var(--surface2);
+  border: 1px solid var(--border);
+  padding: .3rem .85rem; border-radius: 20px;
+  margin-bottom: 1.5rem;
+}
+.hero h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(2.4rem, 6vw, 4rem);
+  line-height: 1.1;
+  margin-bottom: 1.25rem;
+  letter-spacing: -.01em;
+}
+.hero h1 em { font-style: italic; color: var(--text3); }
+.hero p {
+  font-size: 1.1rem; color: var(--text2);
+  max-width: 520px; margin: 0 auto 2rem;
+  line-height: 1.7;
+}
+.hero-stats {
+  display: flex; align-items: center; justify-content: center;
+  gap: 2rem; flex-wrap: wrap;
+  font-size: 13px; color: var(--text3);
+}
+.hero-stats span { display: flex; align-items: center; gap: .4rem; }
+.hero-stats strong { color: var(--text2); font-weight: 500; }
+
+/* TOOLS GRID */
+.tools-section {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 5rem;
+}
+
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.1rem;
+}
+
+.tool-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.75rem;
+  text-decoration: none;
+  color: var(--text);
+  display: flex; flex-direction: column;
+  transition: border-color .2s, transform .15s;
+  position: relative;
+  overflow: hidden;
+}
+.tool-card:hover {
+  border-color: var(--border2);
+  transform: translateY(-2px);
+}
+.tool-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: 16px 16px 0 0;
+}
+
+/* Card accent colours */
+.card-life::before    { background: #c0392b; }
+.card-coffee::before  { background: #6b3f1f; }
+.card-salary::before  { background: #1a4a7a; }
+.card-meetings::before{ background: #c0392b; }
+.card-social::before  { background: #7c5cbf; }
+.card-hydration::before{ background: #1a6fa8; }
+.card-sleep::before   { background: #4f46e5; }
+
+.tool-emoji {
+  font-size: 2rem; margin-bottom: .85rem; display: block;
+}
+.tool-category {
+  font-size: 10px; font-weight: 500; letter-spacing: .09em;
+  text-transform: uppercase; color: var(--text3);
+  margin-bottom: .35rem;
+}
+.tool-name {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.25rem; line-height: 1.2;
+  margin-bottom: .6rem;
+}
+.tool-desc {
+  font-size: 14px; color: var(--text2);
+  line-height: 1.6; flex: 1;
+  margin-bottom: 1.1rem;
+}
+.tool-hook {
+  font-size: 12px; color: var(--text3);
+  font-style: italic; margin-bottom: 1rem;
+  padding: .5rem .75rem;
+  background: var(--surface2);
+  border-radius: 7px;
+  border-left: 2px solid var(--border2);
+}
+.tool-link {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 13px; font-weight: 500; color: var(--text2);
+  margin-top: auto;
+}
+.tool-link-arrow { font-size: 16px; transition: transform .2s; }
+.tool-card:hover .tool-link-arrow { transform: translateX(4px); }
+
+.tool-tag {
+  display: inline-block; font-size: 10px; font-weight: 500;
+  letter-spacing: .05em; text-transform: uppercase;
+  padding: .2rem .6rem; border-radius: 10px;
+  margin-right: .3rem; margin-bottom: .5rem;
+}
+
+/* ABOUT */
+.about-section {
+  background: var(--text);
+  color: #f0ede6;
+  padding: 5rem 1.5rem;
+  text-align: center;
+}
+.about-inner { max-width: 640px; margin: 0 auto; }
+.about-inner h2 {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  line-height: 1.2; margin-bottom: 1.25rem;
+}
+.about-inner h2 em { font-style: italic; color: #c8b89a; }
+.about-inner p {
+  color: #9a8878; font-size: 1rem;
+  line-height: 1.75; margin-bottom: 1rem;
+}
+.about-inner p:last-of-type { margin-bottom: 0; }
+
+/* FOOTER */
+footer {
+  background: var(--surface2);
+  border-top: 1px solid var(--border);
+  padding: 2rem 1.5rem;
+  text-align: center;
+  font-size: 13px; color: var(--text3);
+  line-height: 1.8;
+}
+footer a { color: var(--text2); text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+.footer-links { display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap; margin-bottom: .75rem; }
+
+@media(max-width:600px) {
+  .hero { padding: 4rem 1.25rem 3rem; }
+  .tools-grid { grid-template-columns: 1fr; }
+  .hero-stats { gap: 1rem; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="#">Reality <em>Checks</em></a>
+  <a class="nav-cta" href="#tools">See all tools ↓</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-tag">Free · No sign-up · Research-backed</div>
+  <h1>Tools that give you a <em>reality check</em></h1>
+  <p>Seven honest calculators covering your health, money, time and habits. Built on peer-reviewed research. No fluff, no sign-up — just the numbers.</p>
+  <div class="hero-stats">
+    <span>🛠️ <strong>7 free tools</strong></span>
+    <span>📚 <strong>Research-backed</strong></span>
+    <span>⚡ <strong>Instant results</strong></span>
+    <span>🔒 <strong>No data stored</strong></span>
+  </div>
+</section>
+
+<!-- TOOLS -->
+<section class="tools-section" id="tools">
+  <div class="tools-grid">
+
+    <!-- Life expectancy -->
+    <a class="tool-card card-life" href="https://eritrouib.github.io/life-calculator/" target="_blank">
+      <span class="tool-emoji">🫀</span>
+      <div class="tool-category">Health · Longevity</div>
+      <div class="tool-name">What's Your Lifestyle Costing You?</div>
+      <div class="tool-desc">Enter your habits — alcohol, smoking, exercise, sleep, stress, BMI, diet — and see how many years you're adding or losing. Backed by The Lancet, BMJ and NEJM.</div>
+      <div class="tool-hook">"I had no idea my sitting habits were shaving years off my life."</div>
+      <div>
+        <span class="tool-tag" style="background:#fdf0ee;color:#c0392b">Alcohol</span>
+        <span class="tool-tag" style="background:#fef5e7;color:#b7600a">Smoking</span>
+        <span class="tool-tag" style="background:#edf7f2;color:#1a6b42">Exercise</span>
+        <span class="tool-tag" style="background:#e8f0fa;color:#1a4a7a">BMI</span>
+      </div>
+      <div class="tool-link"><span>Take the check</span><span class="tool-link-arrow">→</span></div>
+    </a>
+
+    <!-- Coffee -->
+    <a class="tool-card card-coffee" href="https://eritrouib.github.io/coffee-cost-calculator/" target="_blank">
+      <span class="tool-emoji">☕</span>
+      <div class="tool-category">Money · Habits</div>
+      <div class="tool-name">What's Your Coffee Habit Really Costing You?</div>
+      <div class="tool-desc">That daily latte feels small. Over 10 years, invested in the S&P 500, it's a very different story. Enter your drinks and see the true cost.</div>
+      <div class="tool-hook">"$5 a day is $73,000 over 20 years if invested. I needed to see that."</div>
+      <div>
+        <span class="tool-tag" style="background:#f5ede4;color:#6b3f1f">Coffee</span>
+        <span class="tool-tag" style="background:#f5ede4;color:#6b3f1f">Iced drinks</span>
+        <span class="tool-tag" style="background:#f5ede4;color:#6b3f1f">Investment growth</span>
+      </div>
+      <div class="tool-link"><span>Calculate the cost</span><span class="tool-link-arrow">→</span></div>
+    </a>
+
+    <!-- Salary -->
+    <a class="tool-card card-salary" href="https://eritrouib.github.io/SalaryVSlifestyle/" target="_blank">
+      <span class="tool-emoji">💰</span>
+      <div class="tool-category">Money · Career</div>
+      <div class="tool-name">Does Your Salary Actually Cover Your Life?</div>
+      <div class="tool-desc">Enter your salary and real monthly costs. See your savings rate, monthly surplus or shortfall, and how far your salary would go in 20 cities across the US, UK and Europe.</div>
+      <div class="tool-hook">"Turns out I'd be significantly better off financially in Lisbon than London."</div>
+      <div>
+        <span class="tool-tag" style="background:#e8f0fa;color:#1a4a7a">US cities</span>
+        <span class="tool-tag" style="background:#e8f0fa;color:#1a4a7a">UK cities</span>
+        <span class="tool-tag" style="background:#e8f0fa;color:#1a4a7a">Europe</span>
+      </div>
+      <div class="tool-link"><span>Check your salary</span><span class="tool-link-arrow">→</span></div>
+    </a>
+
+    <!-- Meetings -->
+    <a class="tool-card card-meetings" href="https://eritrouib.github.io/MeetingsCost/" target="_blank">
+      <span class="tool-emoji">📅</span>
+      <div class="tool-category">Productivity · Work</div>
+      <div class="tool-name">What Are Your Meetings Actually Costing?</div>
+      <div class="tool-desc">A 6-person, 1-hour meeting at average salaries costs ~$230. Enter your weekly meeting load and see the real price — in money, focus time lost and deep work destroyed.</div>
+      <div class="tool-hook">"My team's weekly meetings cost $4,800 a week. Nobody had ever said it out loud."</div>
+      <div>
+        <span class="tool-tag" style="background:#fdf0ee;color:#c0392b">Cost per meeting</span>
+        <span class="tool-tag" style="background:#fdf0ee;color:#c0392b">Deep work lost</span>
+        <span class="tool-tag" style="background:#fdf0ee;color:#c0392b">Annual cost</span>
+      </div>
+      <div class="tool-link"><span>Calculate the cost</span><span class="tool-link-arrow">→</span></div>
+    </a>
+
+    <!-- Social media -->
+    <a class="tool-card card-social" href="https://eritrouib.github.io/SocialMediaTimeCost/" target="_blank">
+      <span class="tool-emoji">📱</span>
+      <div class="tool-category">Productivity · Habits</div>
+      <div class="tool-name">What Is Social Media Really Costing You?</div>
+      <div class="tool-desc">Still scrolling? Enter your daily time on TikTok, Instagram, X, Reddit and more. See how many days of your life it adds up to — and what you could have done instead.</div>
+      <div class="tool-hook">"2 hours a day is 30 full days a year. I could have learned a language."</div>
+      <div>
+        <span class="tool-tag" style="background:rgba(124,92,191,0.1);color:#7c5cbf">Time lost</span>
+        <span class="tool-tag" style="background:rgba(124,92,191,0.1);color:#7c5cbf">Economic cost</span>
+        <span class="tool-tag" style="background:rgba(124,92,191,0.1);color:#7c5cbf">What you could achieve</span>
+      </div>
+      <div class="tool-link"><span>Face the numbers</span><span class="tool-link-arrow">→</span></div>
+    </a>
+
+    <!-- Hydration -->
+    <a class="tool-card card-hydration" href="https://eritrouib.github.io/hydration/" target="_blank">
+      <span class="tool-emoji">💧</span>
+      <div class="tool-category">Health · Daily habits</div>
+      <div class="tool-name">Are You Actually Hydrated?</div>
+      <div class="tool-desc">Most people are mildly dehydrated by mid-afternoon and don't realise it. Enter your weight, activity, climate, caffeine, alcohol and diet for a personalised target and dehydration check.</div>
+      <div class="tool-hook">"I was 60% below my target and wondering why I had a headache all afternoon."</div>
+      <div>
+        <span class="tool-tag" style="background:#e8f3fb;color:#1a6fa8">Personalised target</span>
+        <span class="tool-tag" style="background:#e8f3fb;color:#1a6fa8">Dehydration level</span>
+        <span class="tool-tag" style="background:#e8f3fb;color:#1a6fa8">Drink schedule</span>
+      </div>
+      <div class="tool-link"><span>Check hydration</span><span class="tool-link-arrow">→</span></div>
+    </a>
+
+    <!-- Sleep -->
+    <a class="tool-card card-sleep" href="https://eritrouib.github.io/sleep/" target="_blank">
+      <span class="tool-emoji">🌙</span>
+      <div class="tool-category">Health · Recovery</div>
+      <div class="tool-name">How Much Sleep Are You Actually Getting?</div>
+      <div class="tool-desc">Log your week of sleep, add quality factors — alcohol, screens, caffeine, stress — and see your real sleep debt, its cognitive impact, and exactly how long recovery will take.</div>
+      <div class="tool-hook">"Turns out 7 hours with a glass of wine and an hour of Netflix is actually closer to 5."</div>
+      <div>
+        <span class="tool-tag" style="background:rgba(79,70,229,0.1);color:#4f46e5">Sleep debt</span>
+        <span class="tool-tag" style="background:rgba(79,70,229,0.1);color:#4f46e5">Cognitive impact</span>
+        <span class="tool-tag" style="background:rgba(79,70,229,0.1);color:#4f46e5">Recovery plan</span>
+      </div>
+      <div class="tool-link"><span>Check your sleep</span><span class="tool-link-arrow">→</span></div>
+    </a>
+
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="about-section">
+  <div class="about-inner">
+    <h2>A <em>reality check</em> is a good thing</h2>
+    <p>That's what I tell my sons when I want them to have an honest conversation. It's also what every tool on this site is designed to do — not to alarm you, but to give you the numbers you probably haven't stopped to look at.</p>
+    <p>All tools are free, require no sign-up, store no data, and are built on peer-reviewed research. New tools added regularly.</p>
+    <p style="color:#6a5e50;font-size:14px;margin-top:1.5rem">Built with ♥ and Claude (Anthropic) — because ideas matter more than implementation.</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-links">
+    <a href="https://eritrouib.github.io/life-calculator/" target="_blank">Life expectancy</a>
+    <a href="https://eritrouib.github.io/coffee-cost-calculator/" target="_blank">Coffee cost</a>
+    <a href="https://eritrouib.github.io/SalaryVSlifestyle/" target="_blank">Salary check</a>
+    <a href="https://eritrouib.github.io/MeetingsCost/" target="_blank">Meeting cost</a>
+    <a href="https://eritrouib.github.io/SocialMediaTimeCost/" target="_blank">Screen time</a>
+    <a href="https://eritrouib.github.io/hydration/" target="_blank">Hydration</a>
+    <a href="https://eritrouib.github.io/sleep/" target="_blank">Sleep debt</a>
+  </div>
+  <p>Reality Checks · Free tools that make you think · No sign-up · No data stored</p>
+  <p style="margin-top:.35rem">All tools built on peer-reviewed research. Not a substitute for medical or financial advice.</p>
+</footer>
+
+</body>
+</html>
