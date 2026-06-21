@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Are You Actually Hydrated?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f0f7fb;
+  --surface: #ffffff;
+  --surface2: #e8f3f9;
+  --surface3: #d8ecf5;
+  --border: rgba(10,60,100,0.1);
+  --border2: rgba(10,60,100,0.2);
+  --text: #0a1e2e;
+  --text2: #3a5a70;
+  --text3: #7a9aaa;
+  --blue: #1a6fa8;
+  --blue-bg: #e8f3fb;
+  --blue-dark: #0e4a78;
+  --cyan: #0ea5c9;
+  --green: #1a7a42;
+  --green-bg: #edf7f2;
+  --red: #c0392b;
+  --red-bg: #fdf0ee;
+  --amber: #b7600a;
+  --amber-bg: #fef5e7;
+  --accent: #1a6fa8;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+header {
+  background: linear-gradient(135deg, #0e4a78 0%, #1a6fa8 60%, #0ea5c9 100%);
+  color: white;
+  padding: 3rem 2rem 2.5rem;
+  text-align: center;
+}
+header h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  line-height: 1.15;
+  margin-bottom: .75rem;
+}
+header h1 em { font-style: italic; color: #a8dff0; }
+header p { color: rgba(255,255,255,0.65); font-size: 15px; max-width: 520px; margin: 0 auto; }
+
+.container { max-width: 860px; margin: 2rem auto; padding: 0 1.25rem 4rem; }
+
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+@media(max-width:620px) { .two-col { grid-template-columns: 1fr; } }
+
+.section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.section-title {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 1.25rem;
+}
+
+.field { margin-bottom: 1rem; }
+.field:last-child { margin-bottom: 0; }
+.field label { display: block; font-size: 13px; color: var(--text2); margin-bottom: .4rem; font-weight: 500; }
+.field-sub { font-size: 11px; color: var(--text3); margin-top: .25rem; line-height: 1.4; }
+
+input[type=number], select {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text);
+  outline: none;
+}
+input[type=number]:focus, select:focus { border-color: var(--accent); }
+
+input[type=range] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 5px;
+  background: var(--surface3);
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 3px solid white;
+  box-shadow: 0 0 0 1.5px var(--border2);
+  cursor: pointer;
+}
+input[type=range]::-moz-range-thumb {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 3px solid white;
+  cursor: pointer;
+}
+.range-row { display: flex; align-items: center; gap: 10px; margin-top: .4rem; }
+.range-row input[type=range] { flex: 1; }
+.range-val { font-size: 14px; font-weight: 500; min-width: 48px; text-align: right; color: var(--text); }
+
+.calc-btn {
+  display: block; width: 100%;
+  background: var(--accent); color: white;
+  border: none; border-radius: 12px;
+  padding: 1.1rem 2rem; font-size: 16px;
+  font-family: 'DM Sans', sans-serif; font-weight: 500;
+  cursor: pointer; margin: 1.5rem 0;
+  transition: opacity .15s;
+}
+.calc-btn:hover { opacity: .85; }
+.calc-btn:active { opacity: .7; }
+
+#results { display: none; }
+
+/* Water glass visual */
+.water-visual {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.75rem;
+  text-align: center;
+  margin-bottom: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+.water-glass-wrap {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 2.5rem;
+  margin: 1.25rem 0;
+}
+.glass-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .5rem;
+}
+.glass-label { font-size: 12px; color: var(--text3); letter-spacing: .05em; text-transform: uppercase; }
+.glass {
+  width: 80px;
+  height: 140px;
+  border: 2.5px solid var(--border2);
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  position: relative;
+  overflow: hidden;
+  background: var(--surface2);
+}
+.glass-fill {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  border-radius: 0 0 10px 10px;
+  transition: height .8s cubic-bezier(.34,1.56,.64,1);
+}
+.glass-pct {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.4rem;
+  font-weight: 400;
+  color: var(--text);
+  margin-top: .25rem;
+}
+.glass-sub { font-size: 12px; color: var(--text3); }
+
+.hero-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: .75rem;
+  margin-bottom: 1rem;
+}
+@media(max-width:520px) { .hero-row { grid-template-columns: 1fr 1fr; } }
+
+.hero-stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: .9rem 1rem;
+  text-align: center;
+}
+.hs-label { font-size: 11px; color: var(--text3); margin-bottom: .25rem; }
+.hs-val { font-size: 1.3rem; font-weight: 500; line-height: 1.2; color: var(--text); }
+.hs-sub { font-size: 11px; color: var(--text3); margin-top: .2rem; }
+
+.verdict {
+  border-radius: 10px; padding: 1rem 1.25rem;
+  font-size: 14px; line-height: 1.65;
+  margin-bottom: 1rem; border: 1px solid transparent;
+}
+
+/* Breakdown cards */
+.breakdown-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .65rem;
+  margin-bottom: 1rem;
+}
+@media(max-width:500px) { .breakdown-grid { grid-template-columns: 1fr; } }
+
+.breakdown-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+}
+.bc-emoji { font-size: 20px; margin-bottom: .3rem; display: block; }
+.bc-title { font-size: 12px; color: var(--text2); margin-bottom: .15rem; font-weight: 500; }
+.bc-val { font-size: 1.2rem; font-weight: 500; line-height: 1.2; }
+.bc-sub { font-size: 11px; color: var(--text3); margin-top: .2rem; line-height: 1.4; }
+.bc-positive { color: var(--green); }
+.bc-negative { color: var(--red); }
+.bc-neutral { color: var(--accent); }
+
+/* Factor list */
+.factor-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: .6rem .85rem; border-radius: 9px;
+  margin-bottom: .4rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  font-size: 13px;
+}
+.fr-emoji { font-size: 17px; flex-shrink: 0; }
+.fr-body { flex: 1; min-width: 0; }
+.fr-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.fr-name { font-weight: 500; color: var(--text); }
+.fr-ml { font-weight: 500; }
+.fr-sub { font-size: 11px; color: var(--text3); margin-top: 1px; }
+.fr-bar-wrap { height: 3px; background: var(--surface3); border-radius: 2px; margin-top: 4px; overflow: hidden; }
+.fr-bar-fill { height: 100%; border-radius: 2px; }
+
+.chart-section {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 1.5rem; margin-bottom: 1rem;
+}
+.chart-title { font-size: 13px; font-weight: 500; color: var(--text2); margin-bottom: 1rem; }
+
+/* Symptoms */
+.symptom-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: .5rem;
+  margin-bottom: 1rem;
+}
+@media(max-width:500px) { .symptom-grid { grid-template-columns: 1fr 1fr; } }
+
+.symptom-card {
+  border-radius: 10px;
+  padding: .75rem .9rem;
+  border: 1px solid transparent;
+  text-align: center;
+}
+.symptom-emoji { font-size: 22px; display: block; margin-bottom: .25rem; }
+.symptom-name { font-size: 12px; font-weight: 500; }
+.symptom-threshold { font-size: 11px; margin-top: .15rem; opacity: .7; }
+
+.glass-schedule {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+  margin-top: .75rem;
+}
+.gs-item {
+  background: var(--blue-bg);
+  border: 1px solid rgba(26,111,168,0.2);
+  border-radius: 8px;
+  padding: .35rem .65rem;
+  font-size: 12px;
+  color: var(--blue);
+  font-weight: 500;
+}
+
+.note-box {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 1rem 1.2rem;
+  font-size: 13px; color: var(--text2); line-height: 1.65;
+}
+
+footer {
+  background: var(--blue-dark); color: #5a8aaa;
+  text-align: center; padding: 1.5rem 2rem;
+  font-size: 12.5px; line-height: 1.7;
+}
+footer a { color: #7aaac8; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Are you <em>actually</em> hydrated?</h1>
+  <p>Enter your daily habits and get a personalised hydration target — plus how dehydrated you probably are right now.</p>
+</header>
+
+<div class="container">
+
+  <!-- ABOUT YOU -->
+  <div class="section">
+    <p class="section-title">About you</p>
+    <div class="two-col">
+      <div class="field">
+        <label for="weight">Body weight (kg)</label>
+        <input type="number" id="weight" min="30" max="250" value="70" step="0.5">
+        <p class="field-sub">Base water need scales directly with weight</p>
+      </div>
+      <div class="field">
+        <label for="sex">Biological sex</label>
+        <select id="sex">
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+        </select>
+        <p class="field-sub">Men typically need ~500ml more per day than women</p>
+      </div>
+      <div class="field">
+        <label for="age">Age</label>
+        <input type="number" id="age" min="10" max="100" value="30" step="1">
+        <p class="field-sub">Older adults have reduced thirst sensation</p>
+      </div>
+      <div class="field">
+        <label for="pregnant">Pregnancy / breastfeeding</label>
+        <select id="pregnant">
+          <option value="none">Not applicable</option>
+          <option value="pregnant">Pregnant</option>
+          <option value="breastfeeding">Breastfeeding</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIVITY & CLIMATE -->
+  <div class="section">
+    <p class="section-title">Activity & climate</p>
+    <div class="field">
+      <label>Exercise intensity today — <span id="ex-out" style="font-weight:500;color:var(--text)">Moderate (30–60 min)</span></label>
+      <div class="range-row">
+        <input type="range" id="exercise" min="0" max="4" value="2" step="1">
+      </div>
+    </div>
+    <div class="field">
+      <label>Climate / temperature — <span id="climate-out" style="font-weight:500;color:var(--text)">Mild (15–22°C)</span></label>
+      <div class="range-row">
+        <input type="range" id="climate" min="0" max="4" value="1" step="1">
+      </div>
+      <p class="field-sub">Heat and humidity significantly increase fluid loss through sweat</p>
+    </div>
+    <div class="field">
+      <label for="environment">Environment</label>
+      <select id="environment">
+        <option value="normal">Normal indoors</option>
+        <option value="ac">Air conditioned office (dry air)</option>
+        <option value="heated">Heated building (dry air)</option>
+        <option value="outdoor">Outdoors</option>
+        <option value="highalt">High altitude (1500m+)</option>
+      </select>
+      <p class="field-sub">Air conditioning and heating reduce humidity, increasing fluid loss</p>
+    </div>
+  </div>
+
+  <!-- DIET & DRINKS -->
+  <div class="section">
+    <p class="section-title">Diet & drinks today</p>
+    <div class="two-col">
+      <div class="field">
+        <label for="water-drunk">Water already drunk today (ml)</label>
+        <input type="number" id="water-drunk" min="0" max="5000" value="500" step="50">
+        <p class="field-sub">Plain water, herbal tea, squash</p>
+      </div>
+      <div class="field">
+        <label for="coffee">Caffeinated drinks (cups today)</label>
+        <input type="number" id="coffee" min="0" max="20" value="2" step="1">
+        <p class="field-sub">Coffee, black tea, energy drinks</p>
+      </div>
+      <div class="field">
+        <label for="alcohol">Alcoholic drinks today</label>
+        <input type="number" id="alcohol" min="0" max="20" value="0" step="1">
+        <p class="field-sub">Each unit causes ~100ml extra fluid loss</p>
+      </div>
+      <div class="field">
+        <label for="diet-type">Diet type</label>
+        <select id="diet-type">
+          <option value="mixed">Mixed / balanced</option>
+          <option value="highfruit">High fruit & veg (lots of water-rich foods)</option>
+          <option value="highprotein">High protein / low carb</option>
+          <option value="processed">Mostly processed / salty foods</option>
+        </select>
+        <p class="field-sub">Fruit, veg and soups contribute significant water intake</p>
+      </div>
+    </div>
+    <div class="field">
+      <label>Current thirst level — <span id="thirst-out" style="font-weight:500;color:var(--text)">Slightly thirsty</span></label>
+      <div class="range-row">
+        <input type="range" id="thirst" min="0" max="4" value="1" step="1">
+      </div>
+      <p class="field-sub">Note: thirst is already a sign of mild dehydration</p>
+    </div>
+    <div class="field">
+      <label>Urine colour (most recent) — <span id="urine-out" style="font-weight:500;color:var(--text)">Pale yellow</span></label>
+      <div class="range-row">
+        <input type="range" id="urine" min="0" max="4" value="1" step="1">
+      </div>
+      <p class="field-sub">The best real-time hydration indicator. Aim for pale straw colour.</p>
+    </div>
+  </div>
+
+  <button class="calc-btn" onclick="calculate()">Check my hydration →</button>
+
+  <div id="results">
+
+    <!-- Water glass visual -->
+    <div class="water-visual">
+      <p class="section-title" style="margin-bottom:.5rem">Your hydration today</p>
+      <div class="water-glass-wrap">
+        <div class="glass-container">
+          <div class="glass" id="glass-drunk">
+            <div class="glass-fill" id="fill-drunk" style="height:0%;background:linear-gradient(180deg,#60c8f0,#1a6fa8)"></div>
+          </div>
+          <div class="glass-pct" id="pct-drunk">0%</div>
+          <div class="glass-sub">drunk so far</div>
+          <div class="glass-label">Current</div>
+        </div>
+        <div style="text-align:center;padding-bottom:60px">
+          <div style="font-size:2rem;color:var(--text3)">→</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:.25rem">target</div>
+        </div>
+        <div class="glass-container">
+          <div class="glass" id="glass-target">
+            <div class="glass-fill" id="fill-target" style="height:100%;background:linear-gradient(180deg,#a8dff0,#0ea5c9)"></div>
+          </div>
+          <div class="glass-pct" id="pct-target">100%</div>
+          <div class="glass-sub" id="target-ml">—</div>
+          <div class="glass-label">Target</div>
+        </div>
+      </div>
+      <p id="glass-verdict" style="font-size:14px;color:var(--text2);max-width:400px;margin:0 auto"></p>
+    </div>
+
+    <!-- Stats -->
+    <div class="hero-row">
+      <div class="hero-stat">
+        <p class="hs-label">Daily target</p>
+        <p class="hs-val" id="s-target">—</p>
+        <p class="hs-sub">personalised to you</p>
+      </div>
+      <div class="hero-stat">
+        <p class="hs-label">Drunk so far</p>
+        <p class="hs-val" id="s-drunk">—</p>
+        <p class="hs-sub">today</p>
+      </div>
+      <div class="hero-stat">
+        <p class="hs-label">Still needed</p>
+        <p class="hs-val" id="s-needed" style="color:var(--accent)">—</p>
+        <p class="hs-sub">to hit target</p>
+      </div>
+    </div>
+
+    <div class="verdict" id="verdict"></div>
+
+    <!-- Dehydration symptoms -->
+    <div class="section">
+      <p class="section-title">Likely dehydration symptoms at your level</p>
+      <div class="symptom-grid" id="symptom-grid"></div>
+    </div>
+
+    <!-- Factor breakdown -->
+    <div class="section">
+      <p class="section-title">What's driving your target</p>
+      <div id="factor-list"></div>
+    </div>
+
+    <!-- Breakdown cards -->
+    <div class="breakdown-grid" id="breakdown-grid"></div>
+
+    <!-- Daily schedule -->
+    <div class="section">
+      <p class="section-title">Suggested drinking schedule for the rest of today</p>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:.75rem">Spread your remaining intake across the day — drinking little and often is more effective than large amounts at once.</p>
+      <div class="glass-schedule" id="schedule"></div>
+    </div>
+
+    <!-- Chart -->
+    <div class="chart-section">
+      <p class="chart-title">How your factors add up to your daily target</p>
+      <div style="position:relative;width:100%;height:260px">
+        <canvas id="hydrationChart" role="img" aria-label="Stacked bar chart showing hydration factors contributing to daily target"></canvas>
+      </div>
+    </div>
+
+    <div class="note-box">
+      <strong style="color:var(--text)">Sources:</strong> Base intake formula from EFSA (European Food Safety Authority) guidelines: 2.5L/day men, 2.0L/day women. Activity adjustments per ACSM fluid replacement guidelines. Caffeine diuretic effect: mild net negative at &gt;400mg/day (Mayo Clinic). Alcohol: ~100ml fluid loss per unit (British Nutrition Foundation). Urine colour scale: Armstrong hydration chart (1994). This tool is informational — consult a doctor if you have kidney or heart conditions affecting fluid intake.
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  Built as an informational tool. Not medical advice.<br>
+  Sources: <a href="https://www.efsa.europa.eu/en/efsajournal/pub/1459" target="_blank">EFSA dietary reference values for water</a> · ACSM fluid replacement guidelines · Armstrong urine colour scale (1994)
+</footer>
+
+<script>
+function v(id) { return document.getElementById(id); }
+
+var EX_LABELS     = ['None / rest day','Light (walk, yoga)','Moderate (30–60 min)','Intense (60–90 min)','Very intense (90min+/race)'];
+var CLIMATE_LABELS= ['Cold (under 10°C)','Mild (15–22°C)','Warm (23–30°C)','Hot (31–37°C)','Very hot / humid (38°C+)'];
+var THIRST_LABELS = ['Not thirsty','Slightly thirsty','Thirsty','Very thirsty','Extremely thirsty'];
+var URINE_LABELS  = ['Clear (possibly over-hydrated)','Pale yellow (ideal)','Yellow (acceptable)','Dark yellow (drink more)','Brown / amber (dehydrated)'];
+var URINE_COLORS  = ['#a8e0f8','#d4e87a','#f0d050','#e8a020','#c05010'];
+
+v('exercise').addEventListener('input', function(){ v('ex-out').textContent = EX_LABELS[this.value]; });
+v('climate').addEventListener('input',  function(){ v('climate-out').textContent = CLIMATE_LABELS[this.value]; });
+v('thirst').addEventListener('input',   function(){ v('thirst-out').textContent = THIRST_LABELS[this.value]; });
+v('urine').addEventListener('input',    function(){ v('urine-out').textContent = URINE_LABELS[this.value]; });
+
+var hydChart = null;
+
+function fmtMl(ml) {
+  if (ml >= 1000) return (ml/1000).toFixed(2).replace(/\.?0+$/,'') + 'L';
+  return Math.round(ml) + 'ml';
+}
+
+function calculate() {
+  var weight    = parseFloat(v('weight').value) || 70;
+  var sex       = v('sex').value;
+  var age       = parseInt(v('age').value) || 30;
+  var pregnant  = v('pregnant').value;
+  var exercise  = parseInt(v('exercise').value);
+  var climate   = parseInt(v('climate').value);
+  var env       = v('environment').value;
+  var waterDrunk= parseInt(v('water-drunk').value) || 0;
+  var coffee    = parseInt(v('coffee').value) || 0;
+  var alcohol   = parseInt(v('alcohol').value) || 0;
+  var dietType  = v('diet-type').value;
+  var thirst    = parseInt(v('thirst').value);
+  var urine     = parseInt(v('urine').value);
+
+  // BASE — EFSA: 35ml/kg for men, 30ml/kg for women
+  var base = sex === 'male' ? weight * 35 : weight * 30;
+  var factors = [];
+  factors.push({ emoji:'⚖️', label:'Base requirement', ml: base, note: weight+'kg × '+(sex==='male'?'35':'30')+'ml/kg (EFSA)', color:'#1a6fa8', type:'add' });
+
+  // Age adjustment
+  var ageAdj = 0;
+  if (age >= 65) { ageAdj = 200; factors.push({ emoji:'🧓', label:'Age adjustment (65+)', ml: ageAdj, note:'Older adults have reduced thirst sensation', color:'#1a6fa8', type:'add' }); }
+
+  // Sex/pregnancy
+  var pregAdj = 0;
+  if (pregnant === 'pregnant') { pregAdj = 300; factors.push({ emoji:'🤰', label:'Pregnancy', ml: pregAdj, note:'+300ml above normal intake', color:'#1a6fa8', type:'add' }); }
+  if (pregnant === 'breastfeeding') { pregAdj = 700; factors.push({ emoji:'🤱', label:'Breastfeeding', ml: pregAdj, note:'+700ml — milk production requires significant fluid', color:'#1a6fa8', type:'add' }); }
+
+  // Exercise
+  var exAdj = [0, 300, 600, 1000, 1500][exercise];
+  if (exAdj > 0) factors.push({ emoji:'🏃', label:'Exercise', ml: exAdj, note: EX_LABELS[exercise]+' — sweat loss replacement', color:'#2e9a5a', type:'add' });
+
+  // Climate
+  var climateAdj = [0, 150, 400, 700, 1100][climate];
+  if (climateAdj > 0) factors.push({ emoji:'🌡️', label:'Climate', ml: climateAdj, note: CLIMATE_LABELS[climate]+' — increased perspiration', color:'#e07820', type:'add' });
+
+  // Environment
+  var envAdj = 0;
+  var envNote = '';
+  if (env === 'ac') { envAdj = 200; envNote = 'Air con reduces humidity, increasing respiratory fluid loss'; }
+  else if (env === 'heated') { envAdj = 200; envNote = 'Dry heated air increases fluid loss through breathing'; }
+  else if (env === 'outdoor') { envAdj = 100; envNote = 'Outdoor exposure adds mild fluid demand'; }
+  else if (env === 'highalt') { envAdj = 500; envNote = 'High altitude increases respiratory rate and fluid loss'; }
+  if (envAdj > 0) factors.push({ emoji:'🏢', label:'Environment', ml: envAdj, note: envNote, color:'#7c5cbf', type:'add' });
+
+  // Diet — food water content reduces required drinking
+  var dietAdj = 0;
+  var dietNote = '';
+  if (dietType === 'highfruit') { dietAdj = -500; dietNote = 'High-water foods (fruit/veg) contribute ~500ml'; }
+  else if (dietType === 'mixed') { dietAdj = -300; dietNote = 'Mixed diet typically contributes ~300ml from food'; }
+  else if (dietType === 'highprotein') { dietAdj = 200; dietNote = 'High protein increases renal load — extra water needed'; }
+  else if (dietType === 'processed') { dietAdj = 300; dietNote = 'High salt increases fluid needs'; }
+  if (dietAdj !== 0) factors.push({ emoji:'🥗', label:'Diet', ml: dietAdj, note: dietNote, color: dietAdj < 0 ? '#2e9a5a' : '#c0392b', type: dietAdj < 0 ? 'reduce' : 'add' });
+
+  // Caffeine
+  var caffAdj = 0;
+  if (coffee >= 4) { caffAdj = 200; factors.push({ emoji:'☕', label:'High caffeine intake', ml: caffAdj, note: coffee+' caffeinated drinks — mild diuretic effect above 400mg/day', color:'#c0392b', type:'add' }); }
+
+  // Alcohol
+  var alcAdj = alcohol * 100;
+  if (alcAdj > 0) factors.push({ emoji:'🍺', label:'Alcohol', ml: alcAdj, note: alcohol+' drink'+(alcohol>1?'s':'')+' × 100ml fluid loss per unit', color:'#c0392b', type:'add' });
+
+  // Total target
+  var target = Math.max(1000, base + ageAdj + pregAdj + exAdj + climateAdj + envAdj + dietAdj + caffAdj + alcAdj);
+
+  // Effective intake (coffee counts ~50% toward hydration for moderate intake)
+  var coffeeContrib = coffee <= 3 ? coffee * 150 : coffee * 75;
+  var effectiveDrunk = waterDrunk + coffeeContrib;
+  var stillNeeded = Math.max(0, target - effectiveDrunk);
+  var pctDone = Math.min(100, Math.round(effectiveDrunk / target * 100));
+
+  v('results').style.display = 'block';
+  v('results').scrollIntoView({ behavior:'smooth', block:'start' });
+
+  // Glass visual
+  setTimeout(function() {
+    v('fill-drunk').style.height = pctDone + '%';
+  }, 100);
+  v('pct-drunk').textContent = pctDone + '%';
+  v('target-ml').textContent = fmtMl(target);
+  v('pct-target').textContent = fmtMl(target);
+
+  var glassVerdict = pctDone >= 100 ? '💧 You\'ve hit your target for today — great work!' :
+    pctDone >= 70 ? '💧 Nearly there — just ' + fmtMl(stillNeeded) + ' more to go.' :
+    pctDone >= 40 ? '⚠️ You\'re about halfway. Keep sipping throughout the day.' :
+    '🚨 You\'re significantly behind. Try to drink regularly for the rest of the day.';
+  v('glass-verdict').textContent = glassVerdict;
+
+  v('s-target').textContent  = fmtMl(target);
+  v('s-drunk').textContent   = fmtMl(effectiveDrunk);
+  v('s-needed').textContent  = stillNeeded > 0 ? fmtMl(stillNeeded) : '✓ Target met!';
+  v('s-needed').style.color  = stillNeeded > 0 ? 'var(--accent)' : 'var(--green)';
+
+  // Dehydration level
+  var dehydPct = 100 - pctDone;
+  var dehydLevel = urine >= 3 ? 'moderate' : urine === 4 ? 'severe' : thirst >= 3 ? 'moderate' : dehydPct >= 60 ? 'moderate' : dehydPct >= 30 ? 'mild' : 'minimal';
+  if (urine === 4 || thirst === 4) dehydLevel = 'severe';
+
+  // Verdict
+  var vBg, vColor, vMsg;
+  if (dehydLevel === 'severe') {
+    vBg='#fdf0ee'; vColor='#c0392b';
+    vMsg = 'Your urine colour and thirst level suggest significant dehydration. You need to rehydrate steadily — don\'t gulp large amounts at once. You still need ' + fmtMl(stillNeeded) + ' to reach your personalised target of ' + fmtMl(target) + '.';
+  } else if (dehydLevel === 'moderate') {
+    vBg='#fef5e7'; vColor='#b7600a';
+    vMsg = 'Signs point to moderate dehydration. You\'ve had ' + fmtMl(effectiveDrunk) + ' so far — ' + fmtMl(stillNeeded) + ' short of your ' + fmtMl(target) + ' target. Cognitive performance drops by up to 10% at this level.';
+  } else if (dehydLevel === 'mild') {
+    vBg='#fefce8'; vColor='#7a6020';
+    vMsg = 'Mildly dehydrated. Your body is coping but not thriving. ' + fmtMl(stillNeeded) + ' left to reach your ' + fmtMl(target) + ' target — spread it out over the rest of the day.';
+  } else {
+    vBg='#e8f3fb'; vColor='#1a6fa8';
+    vMsg = pctDone >= 100 ? 'Well hydrated! You\'ve met your personalised target of ' + fmtMl(target) + '. Keep it consistent tomorrow.' :
+      'Looking good so far — you\'re ' + pctDone + '% of the way to your ' + fmtMl(target) + ' target. Keep it up.';
+  }
+  var ve = v('verdict');
+  ve.style.background = vBg; ve.style.color = vColor; ve.style.borderColor = vColor + '44';
+  ve.textContent = vMsg;
+
+  // Symptoms
+  var symptoms = [
+    { emoji:'🧠', name:'Brain fog', threshold:'mild', detail:'Even 1% dehydration impairs concentration' },
+    { emoji:'😴', name:'Fatigue', threshold:'mild', detail:'Fluid loss reduces energy delivery to cells' },
+    { emoji:'🤕', name:'Headache', threshold:'mild', detail:'Common first sign of dehydration' },
+    { emoji:'😤', name:'Irritability', threshold:'mild', detail:'Mood is affected before physical symptoms' },
+    { emoji:'💪', name:'Muscle cramps', threshold:'moderate', detail:'Electrolyte imbalance from fluid loss' },
+    { emoji:'❤️', name:'Elevated heart rate', threshold:'moderate', detail:'Blood thickens, heart works harder' },
+    { emoji:'🌀', name:'Dizziness', threshold:'moderate', detail:'Reduced blood volume affects balance' },
+    { emoji:'🫁', name:'Reduced exercise performance', threshold:'mild', detail:'Up to 20% drop in physical output' },
+    { emoji:'🚽', name:'Dark urine', threshold:'mild', detail:'Kidneys concentrating fluid — key warning sign' }
+  ];
+
+  var sgHtml = '';
+  for (var i=0; i<symptoms.length; i++) {
+    var s = symptoms[i];
+    var active = (dehydLevel === 'severe') ||
+                 (dehydLevel === 'moderate' && s.threshold !== 'severe') ||
+                 (dehydLevel === 'mild' && s.threshold === 'mild');
+    var bg    = active ? (dehydLevel==='severe'?'#fdf0ee':dehydLevel==='moderate'?'#fef5e7':'#fefce8') : 'var(--surface2)';
+    var color = active ? (dehydLevel==='severe'?'#c0392b':dehydLevel==='moderate'?'#b7600a':'#7a6020') : 'var(--text3)';
+    var bdr   = active ? color + '44' : 'var(--border)';
+    sgHtml += '<div class="symptom-card" style="background:'+bg+';border-color:'+bdr+'">' +
+      '<span class="symptom-emoji">'+s.emoji+'</span>' +
+      '<div class="symptom-name" style="color:'+color+'">'+s.name+'</div>' +
+      '<div class="symptom-threshold" style="color:'+color+'">'+s.detail+'</div>' +
+    '</div>';
+  }
+  v('symptom-grid').innerHTML = sgHtml;
+
+  // Factor list
+  var maxMl = 0;
+  for (var j=0; j<factors.length; j++) if (Math.abs(factors[j].ml) > maxMl) maxMl = Math.abs(factors[j].ml);
+  var flHtml = '';
+  for (var k=0; k<factors.length; k++) {
+    var f = factors[k];
+    var pct = maxMl > 0 ? Math.round(Math.abs(f.ml)/maxMl*100) : 0;
+    var sign = f.type === 'reduce' ? '-' : '+';
+    if (k === 0) sign = '';
+    flHtml += '<div class="factor-row">' +
+      '<span class="fr-emoji">'+f.emoji+'</span>' +
+      '<div class="fr-body">' +
+        '<div class="fr-top"><span class="fr-name">'+f.label+'</span><span class="fr-ml" style="color:'+f.color+'">'+sign+fmtMl(Math.abs(f.ml))+'</span></div>' +
+        '<div class="fr-sub">'+f.note+'</div>' +
+        '<div class="fr-bar-wrap"><div class="fr-bar-fill" style="width:'+pct+'%;background:'+f.color+'"></div></div>' +
+      '</div>' +
+    '</div>';
+  }
+  v('factor-list').innerHTML = flHtml;
+
+  // Breakdown cards
+  var cogImpact = dehydLevel === 'severe' ? '↓20% focus' : dehydLevel === 'moderate' ? '↓10% focus' : dehydLevel === 'mild' ? '↓5% focus' : 'Normal';
+  var cogColor = dehydLevel === 'minimal' ? 'bc-neutral' : 'bc-negative';
+  var cards = [
+    { emoji:'💧', title:'Water from food today', val: dietType==='highfruit'?'~500ml':dietType==='mixed'?'~300ml':'~150ml', sub:'Estimated from your diet type', cls:'bc-neutral' },
+    { emoji:'☕', title:'Caffeine contribution', val: coffee <= 3 ? '+'+fmtMl(coffeeContrib)+' net' : 'Net neutral+', sub: coffee <= 3 ? 'Moderate caffeine still hydrates' : 'High intake offsets hydration benefit', cls: coffee >= 4 ? 'bc-negative' : 'bc-positive' },
+    { emoji:'🍺', title:'Alcohol deficit', val: alcAdj > 0 ? '-'+fmtMl(alcAdj) : 'None', sub: alcAdj > 0 ? 'Alcohol is a diuretic — extra water needed' : 'No alcohol today', cls: alcAdj > 0 ? 'bc-negative' : 'bc-neutral' },
+    { emoji:'🧠', title:'Cognitive impact', val: cogImpact, sub: 'Estimated effect on concentration & memory', cls: cogColor },
+    { emoji:'🏃', title:'Extra needed for exercise', val: exAdj > 0 ? '+'+fmtMl(exAdj) : 'None', sub: exAdj > 0 ? 'Sweat loss replacement (ACSM guidelines)' : 'No exercise adjustment today', cls: exAdj > 0 ? 'bc-negative' : 'bc-neutral' },
+    { emoji:'🌡️', title:'Climate & environment extra', val: climateAdj+envAdj > 0 ? '+'+fmtMl(climateAdj+envAdj) : 'None', sub: 'Heat, humidity and dry air increase fluid demand', cls: climateAdj+envAdj > 0 ? 'bc-negative' : 'bc-neutral' }
+  ];
+  var bgHtml = '';
+  for (var n=0; n<cards.length; n++) {
+    var c = cards[n];
+    bgHtml += '<div class="breakdown-card">' +
+      '<span class="bc-emoji">'+c.emoji+'</span>' +
+      '<div class="bc-title">'+c.title+'</div>' +
+      '<div class="bc-val '+c.cls+'">'+c.val+'</div>' +
+      '<div class="bc-sub">'+c.sub+'</div>' +
+    '</div>';
+  }
+  v('breakdown-grid').innerHTML = bgHtml;
+
+  // Schedule
+  var now = new Date();
+  var hoursLeft = Math.max(1, 22 - now.getHours());
+  var glassesNeeded = Math.ceil(stillNeeded / 250);
+  var schedHtml = '';
+  if (stillNeeded <= 0) {
+    schedHtml = '<div class="gs-item" style="background:var(--green-bg);color:var(--green);border-color:rgba(26,122,66,0.2)">✓ Target already met — keep sipping to stay hydrated</div>';
+  } else {
+    var interval = Math.max(1, Math.floor(hoursLeft / glassesNeeded));
+    var hr = now.getHours();
+    var count = 0;
+    while (count < glassesNeeded && hr <= 22) {
+      var ampm = hr >= 12 ? 'pm' : 'am';
+      var displayHr = hr > 12 ? hr-12 : hr === 0 ? 12 : hr;
+      schedHtml += '<div class="gs-item">'+displayHr+':00'+ampm+' — 250ml</div>';
+      hr += interval;
+      count++;
+    }
+  }
+  v('schedule').innerHTML = schedHtml;
+
+  // Chart — stacked contributions
+  var addFactors = factors.filter(function(f){ return f.type !== 'reduce'; });
+  var reduceFactors = factors.filter(function(f){ return f.type === 'reduce'; });
+  var chartLabels = addFactors.map(function(f){ return f.label; });
+  var chartData   = addFactors.map(function(f){ return Math.round(f.ml); });
+  var chartColors = addFactors.map(function(f){ return f.color+'cc'; });
+
+  if (hydChart) hydChart.destroy();
+  hydChart = new Chart(v('hydrationChart'), {
+    type: 'bar',
+    data: {
+      labels: chartLabels,
+      datasets: [{
+        label: 'ml',
+        data: chartData,
+        backgroundColor: chartColors,
+        borderColor: addFactors.map(function(f){ return f.color; }),
+        borderWidth: 1,
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend:{display:false}, tooltip:{ callbacks:{ label:function(ctx){ return fmtMl(ctx.parsed.y); } } } },
+      scales: {
+        y: { ticks:{ callback:function(val){ return fmtMl(val); }, font:{size:11}, color:'#7a9aaa' }, grid:{ color:'rgba(10,60,100,0.06)' } },
+        x: { ticks:{ font:{size:11}, color:'#7a9aaa', maxRotation:30 }, grid:{display:false} }
+      }
+    }
+  });
+}
+</script>
+</body>
+</html>
