@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Reality Checks — Free Tools That Make You Think</title>
-<meta name="description" content="7 free, research-backed calculators that give you an honest look at your habits, health, money and time. No sign-up. No fluff. Just reality.">
+<meta name="description" content="Free, research-backed calculators that give you an honest look at your habits, health, money and time. No sign-up. No fluff. Just reality.">
 <meta property="og:title" content="Reality Checks — Free Tools That Make You Think">
-<meta property="og:description" content="7 free tools covering sleep, hydration, social media, meetings, salary, coffee and life expectancy. Built on real research.">
+<meta property="og:description" content="Free tools covering sleep, hydration, social media, meetings, salary, coffee, life expectancy and more. Built on real research.">
 <meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
@@ -233,9 +233,9 @@ footer a:hover { text-decoration: underline; }
 <section class="hero">
   <div class="hero-tag">Free · No sign-up · Research-backed</div>
   <h1>Tools that give you a <em>reality check</em></h1>
-  <p>Seven honest calculators covering your health, money, time and habits. Built on peer-reviewed research. No fluff, no sign-up — just the numbers.</p>
+  <p>Honest calculators covering your health, money, time and habits. Built on peer-reviewed research. No fluff, no sign-up — just the numbers.</p>
   <div class="hero-stats">
-    <span>🛠️ <strong>7 free tools</strong></span>
+    <span>🛠️ <strong id="tool-count">free tools</strong></span>
     <span>📚 <strong>Research-backed</strong></span>
     <span>⚡ <strong>Instant results</strong></span>
     <span>🔒 <strong>No data stored</strong></span>
@@ -380,5 +380,9 @@ footer a:hover { text-decoration: underline; }
   <p style="margin-top:.35rem">All tools built on peer-reviewed research. Not a substitute for medical or financial advice.</p>
 </footer>
 
+<script>
+  var count = document.querySelectorAll('.tool-card').length;
+  document.getElementById('tool-count').textContent = count + ' free tools';
+</script>
 </body>
 </html>
