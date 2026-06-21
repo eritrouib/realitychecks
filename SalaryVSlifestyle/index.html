@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Does Your Salary Actually Cover Your Life?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f0f4f8;
+  --surface: #ffffff;
+  --surface2: #f0f4f8;
+  --border: rgba(30,60,100,0.1);
+  --border2: rgba(30,60,100,0.2);
+  --text: #0f1e2e;
+  --text2: #4a6080;
+  --text3: #8aa0b8;
+  --green: #1a6b42;
+  --green-bg: #edf7f2;
+  --red: #c0392b;
+  --red-bg: #fdf0ee;
+  --amber: #b7600a;
+  --amber-bg: #fef5e7;
+  --accent: #1a4a7a;
+  --accent-light: #e8f0fa;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+header {
+  background: var(--accent);
+  color: #e8f0fa;
+  padding: 3rem 2rem 2.5rem;
+  text-align: center;
+}
+header h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  line-height: 1.15;
+  margin-bottom: .75rem;
+}
+header h1 em { font-style: italic; color: #a8c8f0; }
+header p { color: #7a9ec0; font-size: 15px; max-width: 560px; margin: 0 auto; }
+
+.container { max-width: 900px; margin: 2rem auto; padding: 0 1.25rem 4rem; }
+
+.section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.1rem;
+}
+
+.section-title {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 1.25rem;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 200px 1fr 80px;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: .85rem;
+}
+.row:last-child { margin-bottom: 0; }
+.row label { font-size: 14px; color: var(--text2); }
+
+.row-select {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: .85rem;
+}
+.row-select:last-child { margin-bottom: 0; }
+.row-select label { font-size: 14px; color: var(--text2); }
+
+input[type=range] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 5px;
+  background: var(--surface2);
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 3px solid white;
+  box-shadow: 0 0 0 1.5px var(--border2);
+  cursor: pointer;
+}
+input[type=range]::-moz-range-thumb {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 3px solid white;
+  cursor: pointer;
+}
+
+.val { font-size: 14px; font-weight: 500; text-align: right; color: var(--text); white-space: nowrap; }
+
+select, input[type=number] {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text);
+  outline: none;
+  width: 100%;
+}
+select:focus, input[type=number]:focus { border-color: var(--accent); }
+
+.salary-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.salary-input-wrap span { font-size: 16px; color: var(--text3); font-weight: 500; }
+.salary-input-wrap input { flex: 1; }
+
+.cost-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .65rem;
+}
+
+.cost-item {
+  display: grid;
+  grid-template-columns: 28px 1fr 100px;
+  align-items: center;
+  gap: 10px;
+  padding: .6rem .75rem;
+  border-radius: 9px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+}
+.cost-emoji { font-size: 17px; text-align: center; }
+.cost-label { font-size: 13px; color: var(--text); font-weight: 500; }
+.cost-sub { font-size: 11px; color: var(--text3); }
+.cost-input-wrap { display: flex; align-items: center; gap: 4px; }
+.cost-input-wrap span { font-size: 12px; color: var(--text3); }
+.cost-input-wrap input[type=number] {
+  width: 75px;
+  padding: 6px 8px;
+  font-size: 13px;
+  text-align: center;
+}
+
+.calc-btn {
+  display: block;
+  width: 100%;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 1.1rem 2rem;
+  font-size: 16px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  margin: 1.5rem 0;
+  transition: opacity .15s;
+}
+.calc-btn:hover { opacity: .85; }
+.calc-btn:active { opacity: .7; }
+
+#results { display: none; }
+
+.result-hero {
+  border-radius: 14px;
+  padding: 2rem;
+  text-align: center;
+  margin-bottom: 1.1rem;
+  border: 1px solid transparent;
+}
+.rh-label { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; opacity: .6; margin-bottom: .4rem; }
+.rh-number { font-family: 'DM Serif Display', serif; font-size: 4rem; line-height: 1; margin-bottom: .25rem; }
+.rh-sub { font-size: 14px; opacity: .6; }
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: .75rem;
+  margin-bottom: 1.1rem;
+}
+.stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: .9rem 1rem;
+  text-align: center;
+}
+.s-label { font-size: 11px; color: var(--text3); margin-bottom: .25rem; }
+.s-val { font-size: 1.3rem; font-weight: 500; line-height: 1.2; }
+.s-sub { font-size: 11px; color: var(--text3); margin-top: .2rem; }
+
+.verdict {
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  font-size: 14px;
+  line-height: 1.65;
+  margin-bottom: 1.1rem;
+  border: 1px solid transparent;
+}
+
+.chart-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.1rem;
+}
+.chart-title { font-size: 13px; font-weight: 500; color: var(--text2); margin-bottom: 1rem; }
+
+.city-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: .75rem;
+  margin-bottom: 1.1rem;
+}
+.city-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+.city-card.current { border-color: var(--accent); border-width: 2px; }
+.city-name { font-size: 13px; font-weight: 500; margin-bottom: .2rem; }
+.city-flag { font-size: 16px; margin-bottom: .4rem; display: block; }
+.city-equiv { font-size: 1.2rem; font-weight: 500; margin-bottom: .1rem; }
+.city-label { font-size: 11px; color: var(--text3); }
+.city-bar { height: 3px; border-radius: 2px; margin-top: .6rem; }
+.city-badge {
+  position: absolute; top: .6rem; right: .6rem;
+  font-size: 10px; padding: 2px 7px;
+  border-radius: 20px; font-weight: 500;
+}
+
+.expense-breakdown {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.1rem;
+}
+.exp-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: .55rem 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.exp-row:last-child { border-bottom: none; }
+.exp-emoji { font-size: 16px; width: 24px; text-align: center; }
+.exp-name { flex: 1; color: var(--text); }
+.exp-amount { font-weight: 500; color: var(--text); min-width: 80px; text-align: right; }
+.exp-pct { font-size: 11px; color: var(--text3); min-width: 40px; text-align: right; }
+.exp-bar-wrap { width: 80px; height: 3px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
+.exp-bar-fill { height: 100%; border-radius: 2px; background: var(--accent); }
+
+.hint { font-size: 12px; color: var(--text3); margin-top: .3rem; line-height: 1.4; }
+
+@media(max-width:640px) {
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .cost-grid { grid-template-columns: 1fr; }
+  .row { grid-template-columns: 1fr 1fr 70px; }
+  .row-select { grid-template-columns: 1fr; gap: 6px; }
+  .cost-item { grid-template-columns: 28px 1fr; }
+  .cost-input-wrap { grid-column: 2; }
+}
+
+footer {
+  background: var(--accent);
+  color: #5a80a8;
+  text-align: center;
+  padding: 1.5rem 2rem;
+  font-size: 12.5px;
+  line-height: 1.7;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Does your salary <em>actually</em> cover your life?</h1>
+  <p>Enter your salary and lifestyle costs, then see how far it goes in cities across the US, UK and Europe.</p>
+</header>
+
+<div class="container">
+
+  <!-- SALARY -->
+  <div class="section">
+    <p class="section-title">Your salary & location</p>
+    <div class="row-select">
+      <label for="city">Your city</label>
+      <select id="city" onchange="updateCurrency()">
+        <optgroup label="🇺🇸 United States">
+          <option value="nyc">New York City</option>
+          <option value="sf">San Francisco</option>
+          <option value="la">Los Angeles</option>
+          <option value="chicago">Chicago</option>
+          <option value="austin">Austin</option>
+          <option value="miami">Miami</option>
+          <option value="seattle">Seattle</option>
+          <option value="boston">Boston</option>
+        </optgroup>
+        <optgroup label="🇬🇧 United Kingdom">
+          <option value="london">London</option>
+          <option value="manchester">Manchester</option>
+          <option value="edinburgh">Edinburgh</option>
+          <option value="bristol">Bristol</option>
+        </optgroup>
+        <optgroup label="🇪🇺 Europe">
+          <option value="amsterdam">Amsterdam</option>
+          <option value="berlin">Berlin</option>
+          <option value="paris">Paris</option>
+          <option value="barcelona">Barcelona</option>
+          <option value="lisbon">Lisbon</option>
+          <option value="milan">Milan</option>
+          <option value="zurich">Zurich</option>
+          <option value="stockholm">Stockholm</option>
+        </optgroup>
+      </select>
+    </div>
+    <div class="row-select">
+      <label for="salary-input">Annual gross salary</label>
+      <div class="salary-input-wrap">
+        <span id="curr-symbol">$</span>
+        <input type="number" id="salary-input" min="0" max="1000000" value="75000" step="1000">
+      </div>
+    </div>
+    <div class="row-select">
+      <label for="tax-rate">Approx. income tax rate</label>
+      <select id="tax-rate">
+        <option value="0.15">~15% (low bracket)</option>
+        <option value="0.22" selected>~22% (mid bracket)</option>
+        <option value="0.30">~30% (upper bracket)</option>
+        <option value="0.40">~40% (high earner)</option>
+        <option value="0.45">~45% (top rate UK/EU)</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- MONTHLY COSTS -->
+  <div class="section">
+    <p class="section-title">Your monthly costs <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:12px">— edit to match your actual life</span></p>
+    <div class="cost-grid">
+      <div class="cost-item">
+        <div class="cost-emoji">🏠</div>
+        <div><div class="cost-label">Rent / mortgage</div><div class="cost-sub">Per month</div></div>
+        <div class="cost-input-wrap"><span id="cs1">$</span><input type="number" id="c-rent" value="2000" min="0" step="50"></div>
+      </div>
+      <div class="cost-item">
+        <div class="cost-emoji">🛒</div>
+        <div><div class="cost-label">Groceries</div><div class="cost-sub">Per month</div></div>
+        <div class="cost-input-wrap"><span id="cs2">$</span><input type="number" id="c-food" value="400" min="0" step="25"></div>
+      </div>
+      <div class="cost-item">
+        <div class="cost-emoji">🚗</div>
+        <div><div class="cost-label">Transport</div><div class="cost-sub">Car / transit / fuel</div></div>
+        <div class="cost-input-wrap"><span id="cs3">$</span><input type="number" id="c-transport" value="300" min="0" step="25"></div>
+      </div>
+      <div class="cost-item">
+        <div class="cost-emoji">💡</div>
+        <div><div class="cost-label">Utilities & bills</div><div class="cost-sub">Energy, internet, phone</div></div>
+        <div class="cost-input-wrap"><span id="cs4">$</span><input type="number" id="c-utilities" value="200" min="0" step="25"></div>
+      </div>
+      <div class="cost-item">
+        <div class="cost-emoji">🍽️</div>
+        <div><div class="cost-label">Eating out</div><div class="cost-sub">Restaurants, takeaways</div></div>
+        <div class="cost-input-wrap"><span id="cs5">$</span><input type="number" id="c-dining" value="300" min="0" step="25"></div>
+      </div>
+      <div class="cost-item">
+        <div class="cost-emoji">🎬</div>
+        <div><div class="cost-label">Entertainment</div><div class="cost-sub">Subscriptions, nights out</div></div>
+        <div class="cost-input-wrap"><span id="cs6">$</span><input type="number" id="c-ent" value="150" min="0" step="25"></div>
+      </div>
+      <div class="cost-item">
+        <div class="cost-emoji">🏥</div>
+        <div><div class="cost-label">Health & fitness</div><div class="cost-sub">Gym, insurance, meds</div></div>
+        <div class="cost-input-wrap"><span id="cs7">$</span><input type="number" id="c-health" value="100" min="0" step="25"></div>
+      </div>
+      <div class="cost-item">
+        <div class="cost-emoji">👗</div>
+        <div><div class="cost-label">Clothing & personal</div><div class="cost-sub">Shopping, haircuts, etc.</div></div>
+        <div class="cost-input-wrap"><span id="cs8">$</span><input type="number" id="c-clothes" value="100" min="0" step="25"></div>
+      </div>
+      <div class="cost-item">
+        <div class="cost-emoji">✈️</div>
+        <div><div class="cost-label">Travel & holidays</div><div class="cost-sub">Monthly average</div></div>
+        <div class="cost-input-wrap"><span id="cs9">$</span><input type="number" id="c-travel" value="150" min="0" step="25"></div>
+      </div>
+      <div class="cost-item">
+        <div class="cost-emoji">📦</div>
+        <div><div class="cost-label">Other / misc</div><div class="cost-sub">Everything else</div></div>
+        <div class="cost-input-wrap"><span id="cs10">$</span><input type="number" id="c-other" value="100" min="0" step="25"></div>
+      </div>
+    </div>
+  </div>
+
+  <button class="calc-btn" onclick="calculate()">Calculate my reality check →</button>
+
+  <div id="results">
+
+    <div class="result-hero" id="hero">
+      <p class="rh-label" id="hero-label">Monthly surplus</p>
+      <p class="rh-number" id="hero-number">$0</p>
+      <p class="rh-sub" id="hero-sub">after tax and all expenses</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat">
+        <p class="s-label">Monthly take-home</p>
+        <p class="s-val" id="s-takehome">—</p>
+        <p class="s-sub">after tax</p>
+      </div>
+      <div class="stat">
+        <p class="s-label">Monthly expenses</p>
+        <p class="s-val" id="s-expenses">—</p>
+        <p class="s-sub">total outgoings</p>
+      </div>
+      <div class="stat">
+        <p class="s-label">Savings rate</p>
+        <p class="s-val" id="s-saverate">—</p>
+        <p class="s-sub">of take-home</p>
+      </div>
+      <div class="stat">
+        <p class="s-label">Cost of living %</p>
+        <p class="s-val" id="s-colpct">—</p>
+        <p class="s-sub">of gross salary</p>
+      </div>
+    </div>
+
+    <div class="verdict" id="verdict"></div>
+
+    <!-- Expense breakdown chart -->
+    <div class="chart-section">
+      <p class="chart-title">Where your money goes each month</p>
+      <div style="position:relative;width:100%;height:260px">
+        <canvas id="expenseChart" role="img" aria-label="Bar chart showing monthly expense breakdown by category"></canvas>
+      </div>
+    </div>
+
+    <!-- Detailed breakdown -->
+    <div class="expense-breakdown">
+      <p class="section-title" style="margin-bottom:1rem">Monthly breakdown</p>
+      <div id="exp-list"></div>
+    </div>
+
+    <!-- City comparison -->
+    <div class="section">
+      <p class="section-title">How your salary compares in other cities</p>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:1rem">Equivalent purchasing power of your salary in other cities, adjusted for cost of living differences.</p>
+      <div class="city-grid" id="city-grid"></div>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem 1.2rem;font-size:13px;color:var(--text2);line-height:1.65;margin-top:.5rem">
+      <strong style="color:var(--text)">Note:</strong> City cost-of-living indices are based on Numbeo and Mercer data (2024). Currency conversions use approximate rates. Tax estimates are simplified and do not account for deductions, NI contributions, or local taxes. This is a rough guide — not financial advice.
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  Built as an informational tool. Not financial advice.<br>
+  Cost of living data based on Numbeo & Mercer 2024. Exchange rates approximate.
+</footer>
+
+<script>
+// City data: { name, flag, currency, symbol, colIndex (NYC=100), taxNote }
+// colIndex: relative cost of living vs NYC (100)
+var CITIES = {
+  nyc:       { name:'New York City',  flag:'🇺🇸', currency:'USD', symbol:'$',  col:100, region:'us' },
+  sf:        { name:'San Francisco',  flag:'🇺🇸', currency:'USD', symbol:'$',  col:102, region:'us' },
+  la:        { name:'Los Angeles',    flag:'🇺🇸', currency:'USD', symbol:'$',  col:88,  region:'us' },
+  chicago:   { name:'Chicago',        flag:'🇺🇸', currency:'USD', symbol:'$',  col:72,  region:'us' },
+  austin:    { name:'Austin',         flag:'🇺🇸', currency:'USD', symbol:'$',  col:68,  region:'us' },
+  miami:     { name:'Miami',          flag:'🇺🇸', currency:'USD', symbol:'$',  col:78,  region:'us' },
+  seattle:   { name:'Seattle',        flag:'🇺🇸', currency:'USD', symbol:'$',  col:82,  region:'us' },
+  boston:    { name:'Boston',         flag:'🇺🇸', currency:'USD', symbol:'$',  col:90,  region:'us' },
+  london:    { name:'London',         flag:'🇬🇧', currency:'GBP', symbol:'£',  col:95,  region:'uk' },
+  manchester:{ name:'Manchester',     flag:'🇬🇧', currency:'GBP', symbol:'£',  col:62,  region:'uk' },
+  edinburgh: { name:'Edinburgh',      flag:'🇬🇧', currency:'GBP', symbol:'£',  col:65,  region:'uk' },
+  bristol:   { name:'Bristol',        flag:'🇬🇧', currency:'GBP', symbol:'£',  col:63,  region:'uk' },
+  amsterdam: { name:'Amsterdam',      flag:'🇳🇱', currency:'EUR', symbol:'€',  col:88,  region:'eu' },
+  berlin:    { name:'Berlin',         flag:'🇩🇪', currency:'EUR', symbol:'€',  col:70,  region:'eu' },
+  paris:     { name:'Paris',          flag:'🇫🇷', currency:'EUR', symbol:'€',  col:90,  region:'eu' },
+  barcelona: { name:'Barcelona',      flag:'🇪🇸', currency:'EUR', symbol:'€',  col:62,  region:'eu' },
+  lisbon:    { name:'Lisbon',         flag:'🇵🇹', currency:'EUR', symbol:'€',  col:55,  region:'eu' },
+  milan:     { name:'Milan',          flag:'🇮🇹', currency:'EUR', symbol:'€',  col:75,  region:'eu' },
+  zurich:    { name:'Zurich',         flag:'🇨🇭', currency:'CHF', symbol:'Fr', col:118, region:'eu' },
+  stockholm: { name:'Stockholm',      flag:'🇸🇪', currency:'SEK', symbol:'kr', col:85,  region:'eu' }
+};
+
+// Approximate exchange rates to USD
+var FX = { USD:1, GBP:1.27, EUR:1.08, CHF:1.12, SEK:0.093 };
+
+function v(id) { return document.getElementById(id); }
+
+function updateCurrency() {
+  var city = CITIES[v('city').value];
+  var sym = city.symbol;
+  v('curr-symbol').textContent = sym;
+  var ids = ['cs1','cs2','cs3','cs4','cs5','cs6','cs7','cs8','cs9','cs10'];
+  for (var i=0; i<ids.length; i++) v(ids[i]).textContent = sym;
+}
+
+function fmtC(n, sym) {
+  var abs = Math.abs(Math.round(n));
+  var s = abs >= 10000 ? (abs/1000).toFixed(1)+'k' : abs.toLocaleString();
+  return (n < 0 ? '-' : '') + sym + s;
+}
+
+var chartInstance = null;
+
+function calculate() {
+  var cityKey = v('city').value;
+  var city = CITIES[cityKey];
+  var sym = city.symbol;
+  var grossSalary = parseFloat(v('salary-input').value) || 0;
+  var taxRate = parseFloat(v('tax-rate').value);
+  var netAnnual = grossSalary * (1 - taxRate);
+  var netMonthly = netAnnual / 12;
+
+  var expenses = [
+    { id:'c-rent',      emoji:'🏠', name:'Rent / mortgage' },
+    { id:'c-food',      emoji:'🛒', name:'Groceries' },
+    { id:'c-transport', emoji:'🚗', name:'Transport' },
+    { id:'c-utilities', emoji:'💡', name:'Utilities & bills' },
+    { id:'c-dining',    emoji:'🍽️', name:'Eating out' },
+    { id:'c-ent',       emoji:'🎬', name:'Entertainment' },
+    { id:'c-health',    emoji:'🏥', name:'Health & fitness' },
+    { id:'c-clothes',   emoji:'👗', name:'Clothing & personal' },
+    { id:'c-travel',    emoji:'✈️', name:'Travel & holidays' },
+    { id:'c-other',     emoji:'📦', name:'Other / misc' }
+  ];
+
+  var totalExpenses = 0;
+  var expData = [];
+  for (var i=0; i<expenses.length; i++) {
+    var amt = parseFloat(v(expenses[i].id).value) || 0;
+    totalExpenses += amt;
+    expData.push({ emoji: expenses[i].emoji, name: expenses[i].name, amount: amt });
+  }
+
+  var surplus = netMonthly - totalExpenses;
+  var savingsRate = netMonthly > 0 ? (surplus / netMonthly * 100) : 0;
+  var colPct = grossSalary > 0 ? (totalExpenses * 12 / grossSalary * 100) : 0;
+
+  v('results').style.display = 'block';
+  v('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  // Hero
+  var heroEl = v('hero');
+  var heroNum = v('hero-number');
+  heroNum.textContent = fmtC(surplus, sym);
+  if (surplus >= 0) {
+    heroEl.style.background = '#edf7f2'; heroEl.style.color = '#1a6b42'; heroEl.style.borderColor = 'rgba(26,107,66,0.2)';
+    v('hero-label').textContent = 'Monthly surplus';
+  } else {
+    heroEl.style.background = '#fdf0ee'; heroEl.style.color = '#c0392b'; heroEl.style.borderColor = 'rgba(192,57,43,0.2)';
+    v('hero-label').textContent = 'Monthly shortfall';
+  }
+
+  v('s-takehome').textContent = fmtC(netMonthly, sym);
+  v('s-takehome').style.color = 'var(--text)';
+  v('s-expenses').textContent = fmtC(totalExpenses, sym);
+  var srEl = v('s-saverate');
+  srEl.textContent = savingsRate.toFixed(1) + '%';
+  srEl.style.color = savingsRate >= 20 ? '#1a6b42' : savingsRate >= 10 ? '#b7600a' : '#c0392b';
+  v('s-colpct').textContent = colPct.toFixed(1) + '%';
+
+  // Verdict
+  var vBg, vColor, vMsg;
+  if (surplus < 0) {
+    vBg='#fdf0ee'; vColor='#c0392b';
+    vMsg = 'Your expenses exceed your take-home pay by ' + fmtC(Math.abs(surplus), sym) + ' every month. Something needs to change — either your income needs to rise or your costs need to come down.';
+  } else if (savingsRate < 10) {
+    vBg='#fef5e7'; vColor='#b7600a';
+    vMsg = 'You are covering your costs but barely saving. Financial advisors typically recommend saving at least 20% of take-home. Your current savings rate of ' + savingsRate.toFixed(1) + '% leaves little cushion.';
+  } else if (savingsRate < 20) {
+    vBg='#fefce8'; vColor='#7a6020';
+    vMsg = 'You have a positive surplus and a savings rate of ' + savingsRate.toFixed(1) + '%. That\'s decent — pushing toward 20% would put you in a much stronger financial position.';
+  } else {
+    vBg='#edf7f2'; vColor='#1a6b42';
+    vMsg = 'Strong position! A savings rate of ' + savingsRate.toFixed(1) + '% means you have real financial flexibility. Make sure that surplus is working for you — in savings, investments, or an emergency fund.';
+  }
+  var ve = v('verdict');
+  ve.style.background = vBg; ve.style.color = vColor; ve.style.borderColor = vColor + '44';
+  ve.textContent = vMsg;
+
+  // Expense chart
+  var labels = [], data = [], colors = [];
+  var palette = ['#1a4a7a','#2e6da8','#4a8cc0','#1a6b42','#2e8f5e','#b7600a','#c0392b','#7a3b8a','#4a7a6a','#6a6a7a'];
+  for (var j=0; j<expData.length; j++) {
+    if (expData[j].amount > 0) {
+      labels.push(expData[j].name);
+      data.push(expData[j].amount);
+      colors.push(palette[j % palette.length]);
+    }
+  }
+
+  if (chartInstance) chartInstance.destroy();
+  chartInstance = new Chart(v('expenseChart'), {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{ data: data, backgroundColor: colors, borderRadius: 5, borderSkipped: false }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: function(ctx) { return sym + ctx.parsed.y.toLocaleString(); } } }
+      },
+      scales: {
+        y: {
+          ticks: { callback: function(val) { return sym + val.toLocaleString(); }, font:{size:11}, color:'#8aa0b8' },
+          grid: { color:'rgba(30,60,100,0.06)' }
+        },
+        x: {
+          ticks: { font:{size:10}, color:'#8aa0b8', maxRotation:35 },
+          grid: { display:false }
+        }
+      }
+    }
+  });
+
+  // Expense list
+  var maxAmt = 0;
+  for (var k=0; k<expData.length; k++) if (expData[k].amount > maxAmt) maxAmt = expData[k].amount;
+  var expHtml = '';
+  for (var l=0; l<expData.length; l++) {
+    var e = expData[l];
+    var pct = totalExpenses > 0 ? Math.round(e.amount/totalExpenses*100) : 0;
+    var barPct = maxAmt > 0 ? Math.round(e.amount/maxAmt*100) : 0;
+    expHtml += '<div class="exp-row">' +
+      '<span class="exp-emoji">' + e.emoji + '</span>' +
+      '<span class="exp-name">' + e.name + '</span>' +
+      '<div class="exp-bar-wrap"><div class="exp-bar-fill" style="width:' + barPct + '%"></div></div>' +
+      '<span class="exp-amount">' + fmtC(e.amount, sym) + '</span>' +
+      '<span class="exp-pct">' + pct + '%</span>' +
+    '</div>';
+  }
+  expHtml += '<div class="exp-row" style="border-top:2px solid var(--border);margin-top:.25rem;padding-top:.65rem">' +
+    '<span class="exp-emoji">📊</span>' +
+    '<span class="exp-name" style="font-weight:500">Total expenses</span>' +
+    '<div class="exp-bar-wrap"></div>' +
+    '<span class="exp-amount" style="font-weight:500">' + fmtC(totalExpenses, sym) + '</span>' +
+    '<span class="exp-pct">100%</span>' +
+  '</div>';
+  v('exp-list').innerHTML = expHtml;
+
+  // City comparison
+  var cityCurrencyUSD = grossSalary * FX[city.currency];
+  var currentCol = city.col;
+  var cityHtml = '';
+  var cityKeys = Object.keys(CITIES);
+  var maxEquiv = 0;
+
+  var equivSalaries = {};
+  for (var ci=0; ci<cityKeys.length; ci++) {
+    var ck = cityKeys[ci];
+    var cd = CITIES[ck];
+    var equivUSD = cityCurrencyUSD * (currentCol / cd.col);
+    var equivLocal = equivUSD / FX[cd.currency];
+    equivSalaries[ck] = equivLocal;
+    if (equivLocal > maxEquiv) maxEquiv = equivLocal;
+  }
+
+  for (var ci2=0; ci2<cityKeys.length; ci2++) {
+    var ck2 = cityKeys[ci2];
+    var cd2 = CITIES[ck2];
+    var equiv = equivSalaries[ck2];
+    var barW = maxEquiv > 0 ? Math.round(equiv/maxEquiv*100) : 0;
+    var isCurrent = ck2 === cityKey;
+    var diff = ((equiv * FX[cd2.currency] / FX[city.currency]) - grossSalary) / grossSalary * 100;
+    var barColor = diff >= 10 ? '#1a6b42' : diff >= -10 ? '#1a4a7a' : '#c0392b';
+    var badgeColor = diff >= 10 ? '#edf7f2' : diff <= -10 ? '#fdf0ee' : '#e8f0fa';
+    var badgeText = diff >= 10 ? '#1a6b42' : diff <= -10 ? '#c0392b' : '#1a4a7a';
+    var diffLabel = diff >= 0.5 ? '+' + Math.round(diff) + '% buying power' : diff <= -0.5 ? Math.round(diff) + '% buying power' : 'Similar';
+
+    cityHtml += '<div class="city-card' + (isCurrent?' current':'') + '">' +
+      '<span class="city-flag">' + cd2.flag + '</span>' +
+      '<div class="city-name">' + cd2.name + (isCurrent?' <span style="font-size:10px;color:var(--accent)">(you)</span>':'') + '</div>' +
+      '<div class="city-equiv">' + cd2.symbol + Math.round(equiv).toLocaleString() + '</div>' +
+      '<div class="city-label">equivalent salary</div>' +
+      '<div class="city-bar" style="background:' + barColor + '20">' +
+        '<div style="height:100%;width:' + barW + '%;background:' + barColor + ';border-radius:2px"></div>' +
+      '</div>' +
+      '<div style="font-size:11px;margin-top:.4rem;color:' + badgeText + '">' + diffLabel + '</div>' +
+    '</div>';
+  }
+  v('city-grid').innerHTML = cityHtml;
+}
+
+// Init
+updateCurrency();
+</script>
+</body>
+</html>
