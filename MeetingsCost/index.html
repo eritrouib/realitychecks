@@ -1,0 +1,661 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What Are Your Meetings Actually Costing?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f7f5f0;
+  --surface: #ffffff;
+  --surface2: #f0ede6;
+  --surface3: #e8e4db;
+  --border: rgba(40,30,10,0.1);
+  --border2: rgba(40,30,10,0.2);
+  --text: #1c1810;
+  --text2: #5a5040;
+  --text3: #9a9080;
+  --red: #c0392b;
+  --red-bg: #fdf0ee;
+  --amber: #b7600a;
+  --amber-bg: #fef5e7;
+  --green: #1a6b42;
+  --green-bg: #edf7f2;
+  --blue: #1a4a7a;
+  --blue-bg: #e8f0fa;
+  --accent: #c0392b;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+header {
+  background: var(--text);
+  color: #f0ede6;
+  padding: 3rem 2rem 2.5rem;
+  text-align: center;
+}
+header h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  line-height: 1.15;
+  margin-bottom: .75rem;
+}
+header h1 em { font-style: italic; color: #e8a87c; }
+header p { color: #9a8878; font-size: 15px; max-width: 540px; margin: 0 auto; }
+
+.container { max-width: 860px; margin: 2rem auto; padding: 0 1.25rem 4rem; }
+
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+@media(max-width:640px) { .two-col { grid-template-columns: 1fr; } }
+
+.section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.section-title {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 1.25rem;
+}
+
+.field { margin-bottom: 1rem; }
+.field:last-child { margin-bottom: 0; }
+.field label { display: block; font-size: 13px; color: var(--text2); margin-bottom: .4rem; }
+.field-sub { font-size: 11px; color: var(--text3); margin-top: .25rem; }
+
+input[type=number], select {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text);
+  outline: none;
+}
+input[type=number]:focus, select:focus { border-color: var(--accent); }
+
+input[type=range] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 5px;
+  background: var(--surface2);
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+  margin-top: .4rem;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 3px solid var(--bg);
+  box-shadow: 0 0 0 1.5px var(--border2);
+  cursor: pointer;
+}
+input[type=range]::-moz-range-thumb {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 3px solid var(--bg);
+  cursor: pointer;
+}
+.range-row { display: flex; align-items: center; gap: 10px; }
+.range-row input[type=range] { flex: 1; margin-top: 0; }
+.range-val { font-size: 14px; font-weight: 500; min-width: 36px; text-align: right; }
+
+/* Weekly meetings table */
+.meeting-table { width: 100%; border-collapse: collapse; }
+.meeting-table th {
+  font-size: 11px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--text3); padding: .4rem .6rem; text-align: left; border-bottom: 1px solid var(--border);
+}
+.meeting-table td { padding: .5rem .6rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.meeting-table tr:last-child td { border-bottom: none; }
+.meeting-table input[type=number] { padding: 6px 8px; font-size: 13px; }
+.meeting-table .meeting-name { font-size: 13px; font-weight: 500; color: var(--text); }
+.meeting-table .meeting-sub { font-size: 11px; color: var(--text3); }
+
+.calc-btn {
+  display: block; width: 100%;
+  background: var(--accent); color: white;
+  border: none; border-radius: 12px;
+  padding: 1.1rem 2rem; font-size: 16px;
+  font-family: 'DM Sans', sans-serif; font-weight: 500;
+  cursor: pointer; margin: 1.5rem 0;
+  transition: opacity .15s;
+}
+.calc-btn:hover { opacity: .85; }
+.calc-btn:active { opacity: .7; }
+
+#results { display: none; }
+
+.result-hero {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+  margin-bottom: 1rem;
+}
+@media(max-width:500px) { .result-hero { grid-template-columns: 1fr; } }
+
+.hero-card {
+  border-radius: 14px; padding: 1.75rem;
+  text-align: center; border: 1px solid transparent;
+}
+.hero-label { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; opacity: .6; margin-bottom: .4rem; }
+.hero-number { font-family: 'DM Serif Display', serif; font-size: 3.2rem; line-height: 1; margin-bottom: .2rem; }
+.hero-sub { font-size: 13px; opacity: .6; }
+
+.stats-grid {
+  display: grid; grid-template-columns: repeat(4,1fr);
+  gap: .75rem; margin-bottom: 1rem;
+}
+@media(max-width:580px) { .stats-grid { grid-template-columns: 1fr 1fr; } }
+
+.stat {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: .9rem 1rem; text-align: center;
+}
+.s-label { font-size: 11px; color: var(--text3); margin-bottom: .25rem; }
+.s-val { font-size: 1.2rem; font-weight: 500; line-height: 1.2; }
+.s-sub { font-size: 11px; color: var(--text3); margin-top: .2rem; }
+
+.verdict {
+  border-radius: 10px; padding: 1rem 1.25rem;
+  font-size: 14px; line-height: 1.65;
+  margin-bottom: 1rem; border: 1px solid transparent;
+}
+
+.chart-section {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 1.5rem; margin-bottom: 1rem;
+}
+.chart-title { font-size: 13px; font-weight: 500; color: var(--text2); margin-bottom: 1rem; }
+
+/* Productivity impact cards */
+.impact-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: .65rem; margin-bottom: 1rem;
+}
+@media(max-width:500px) { .impact-grid { grid-template-columns: 1fr; } }
+
+.impact-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 1.1rem 1.2rem;
+}
+.impact-emoji { font-size: 22px; margin-bottom: .35rem; display: block; }
+.impact-title { font-size: 12px; color: var(--text2); margin-bottom: .2rem; }
+.impact-val { font-size: 1.3rem; font-weight: 500; color: var(--text); line-height: 1.2; }
+.impact-sub { font-size: 11px; color: var(--text3); margin-top: .2rem; line-height: 1.4; }
+
+/* Weekly breakdown */
+.week-result-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: .65rem .85rem; border-radius: 9px;
+  margin-bottom: .4rem; background: var(--surface2);
+  border: 1px solid var(--border); font-size: 13px;
+}
+.wrr-icon { font-size: 18px; flex-shrink: 0; }
+.wrr-body { flex: 1; min-width: 0; }
+.wrr-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.wrr-name { font-weight: 500; }
+.wrr-cost { font-weight: 500; color: var(--red); }
+.wrr-sub { font-size: 11px; color: var(--text3); margin-top: 1px; }
+.wrr-bar-wrap { height: 3px; background: var(--surface3); border-radius: 2px; margin-top: 4px; overflow:hidden; }
+.wrr-bar-fill { height: 100%; border-radius: 2px; background: var(--red); }
+
+.note-box {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 1rem 1.2rem;
+  font-size: 13px; color: var(--text2); line-height: 1.65;
+}
+
+footer {
+  background: var(--text); color: #6a5e50;
+  text-align: center; padding: 1.5rem 2rem;
+  font-size: 12.5px; line-height: 1.7;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>What are your meetings <em>actually</em> costing?</h1>
+  <p>Enter your meeting details and see the real price — in money, focus time, and productivity lost.</p>
+</header>
+
+<div class="container">
+
+  <!-- SINGLE MEETING -->
+  <div class="section">
+    <p class="section-title">Single meeting calculator</p>
+    <div class="two-col">
+      <div class="field">
+        <label for="attendees">Number of attendees</label>
+        <input type="number" id="attendees" min="1" max="200" value="6">
+      </div>
+      <div class="field">
+        <label for="duration">Duration (minutes)</label>
+        <input type="number" id="duration" min="5" max="480" value="60" step="5">
+      </div>
+      <div class="field">
+        <label for="avg-salary">Average attendee salary ($/yr)</label>
+        <input type="number" id="avg-salary" min="10000" max="1000000" value="80000" step="5000">
+        <p class="field-sub">Used to calculate cost per person</p>
+      </div>
+      <div class="field">
+        <label for="meeting-type">Meeting type</label>
+        <select id="meeting-type">
+          <option value="status">Status update</option>
+          <option value="decision">Decision making</option>
+          <option value="brainstorm">Brainstorm / ideation</option>
+          <option value="1on1">1-on-1</option>
+          <option value="allhands">All hands</option>
+          <option value="interview">Interview</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>How useful was / is it? <span id="useful-out" style="font-weight:500;color:var(--text)">50%</span></label>
+      <div class="range-row">
+        <input type="range" id="useful" min="0" max="100" value="50" step="5">
+      </div>
+      <p class="field-sub">0% = total waste, 100% = every minute was valuable</p>
+    </div>
+  </div>
+
+  <!-- WEEKLY LOAD -->
+  <div class="section">
+    <p class="section-title">Weekly meeting load</p>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:1rem">How many times per week do you have each type? Enter 0 to skip.</p>
+    <table class="meeting-table">
+      <thead>
+        <tr>
+          <th>Meeting type</th>
+          <th style="width:80px">Per week</th>
+          <th style="width:100px">Duration (min)</th>
+          <th style="width:90px">Attendees</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div class="meeting-name">📊 Status standups</div><div class="meeting-sub">Daily or weekly syncs</div></td>
+          <td><input type="number" id="wm-standup-freq" min="0" max="20" value="5"></td>
+          <td><input type="number" id="wm-standup-dur" min="5" max="120" value="15" step="5"></td>
+          <td><input type="number" id="wm-standup-att" min="1" max="50" value="8"></td>
+        </tr>
+        <tr>
+          <td><div class="meeting-name">🧠 Team meetings</div><div class="meeting-sub">Planning, reviews, retrospectives</div></td>
+          <td><input type="number" id="wm-team-freq" min="0" max="20" value="2"></td>
+          <td><input type="number" id="wm-team-dur" min="5" max="240" value="60" step="5"></td>
+          <td><input type="number" id="wm-team-att" min="1" max="50" value="6"></td>
+        </tr>
+        <tr>
+          <td><div class="meeting-name">👤 1-on-1s</div><div class="meeting-sub">Manager, reports, peers</div></td>
+          <td><input type="number" id="wm-1on1-freq" min="0" max="20" value="2"></td>
+          <td><input type="number" id="wm-1on1-dur" min="5" max="120" value="30" step="5"></td>
+          <td><input type="number" id="wm-1on1-att" min="1" max="10" value="2"></td>
+        </tr>
+        <tr>
+          <td><div class="meeting-name">🏢 All hands / town halls</div><div class="meeting-sub">Company-wide updates</div></td>
+          <td><input type="number" id="wm-allhands-freq" min="0" max="10" value="0"></td>
+          <td><input type="number" id="wm-allhands-dur" min="5" max="240" value="60" step="5"></td>
+          <td><input type="number" id="wm-allhands-att" min="1" max="500" value="50"></td>
+        </tr>
+        <tr>
+          <td><div class="meeting-name">🤝 External / client calls</div><div class="meeting-sub">Sales, partners, vendors</div></td>
+          <td><input type="number" id="wm-client-freq" min="0" max="20" value="1"></td>
+          <td><input type="number" id="wm-client-dur" min="5" max="240" value="45" step="5"></td>
+          <td><input type="number" id="wm-client-att" min="1" max="20" value="3"></td>
+        </tr>
+        <tr>
+          <td><div class="meeting-name">💡 Ad hoc / unplanned</div><div class="meeting-sub">"Got a minute?" moments</div></td>
+          <td><input type="number" id="wm-adhoc-freq" min="0" max="20" value="3"></td>
+          <td><input type="number" id="wm-adhoc-dur" min="5" max="120" value="20" step="5"></td>
+          <td><input type="number" id="wm-adhoc-att" min="1" max="20" value="3"></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="two-col" style="margin-top:1rem">
+      <div class="field">
+        <label for="weekly-salary">Your annual salary ($/yr)</label>
+        <input type="number" id="weekly-salary" min="10000" max="1000000" value="80000" step="5000">
+        <p class="field-sub">For your personal time cost</p>
+      </div>
+      <div class="field">
+        <label for="avg-weekly-salary">Avg attendee salary ($/yr)</label>
+        <input type="number" id="avg-weekly-salary" min="10000" max="1000000" value="80000" step="5000">
+        <p class="field-sub">For total company cost</p>
+      </div>
+    </div>
+  </div>
+
+  <button class="calc-btn" onclick="calculate()">Calculate the real cost →</button>
+
+  <div id="results">
+
+    <!-- Hero cards -->
+    <div class="result-hero">
+      <div class="hero-card" style="background:#fdf0ee;border-color:rgba(192,57,43,0.2);color:#c0392b">
+        <p class="hero-label">Single meeting cost</p>
+        <p class="hero-number" id="single-cost">$0</p>
+        <p class="hero-sub" id="single-sub">in salary cost</p>
+      </div>
+      <div class="hero-card" style="background:#fef5e7;border-color:rgba(183,96,10,0.2);color:#b7600a">
+        <p class="hero-label">Weekly meeting cost</p>
+        <p class="hero-number" id="weekly-cost">$0</p>
+        <p class="hero-sub">total company cost</p>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat">
+        <p class="s-label">Annual meeting cost</p>
+        <p class="s-val" id="annual-cost">—</p>
+        <p class="s-sub">your org spends</p>
+      </div>
+      <div class="stat">
+        <p class="s-label">Your time in meetings</p>
+        <p class="s-val" id="your-time">—</p>
+        <p class="s-sub">hours per week</p>
+      </div>
+      <div class="stat">
+        <p class="s-label">Deep work left</p>
+        <p class="s-val" id="deep-work">—</p>
+        <p class="s-sub">hrs/week uninterrupted</p>
+      </div>
+      <div class="stat">
+        <p class="s-label">Wasted meeting cost</p>
+        <p class="s-val" id="wasted-cost">—</p>
+        <p class="s-sub">based on usefulness %</p>
+      </div>
+    </div>
+
+    <div class="verdict" id="verdict"></div>
+
+    <!-- Cost breakdown chart -->
+    <div class="chart-section">
+      <p class="chart-title">Weekly cost breakdown by meeting type</p>
+      <div style="position:relative;width:100%;height:260px">
+        <canvas id="costChart" role="img" aria-label="Bar chart showing weekly meeting cost by type"></canvas>
+      </div>
+    </div>
+
+    <!-- Weekly meeting breakdown list -->
+    <div class="section">
+      <p class="section-title">Weekly meeting breakdown</p>
+      <div id="week-breakdown"></div>
+    </div>
+
+    <!-- Productivity impact -->
+    <div class="section">
+      <p class="section-title">Productivity & focus impact — per week</p>
+      <div class="impact-grid" id="impact-grid"></div>
+    </div>
+
+    <!-- Annual cost chart -->
+    <div class="chart-section">
+      <p class="chart-title">Annual meeting cost vs. what that budget could buy</p>
+      <div style="position:relative;width:100%;height:280px">
+        <canvas id="compareChart" role="img" aria-label="Horizontal bar chart comparing annual meeting cost to alternative uses of that budget"></canvas>
+      </div>
+    </div>
+
+    <div class="note-box">
+      <strong style="color:var(--text)">Methodology:</strong> Costs calculated as (annual salary ÷ 2080 working hours) × meeting hours × attendees. Deep work calculation assumes an 8-hour working day with 1hr overhead (email/admin). Context-switching cost: research (Gloria Mark, UC Irvine) shows it takes ~23 mins to fully refocus after an interruption — applied per meeting per attendee.
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  Built as an informational tool. Not financial advice.<br>
+  Context-switching research: Gloria Mark, UC Irvine. Salary cost formula: annual salary ÷ 2,080 working hours.
+</footer>
+
+<script>
+function v(id) { return document.getElementById(id); }
+
+function fmtMoney(n) {
+  if (n >= 1000000) return '$' + (n/1000000).toFixed(2) + 'M';
+  if (n >= 1000) return '$' + Math.round(n/1000) + 'k';
+  return '$' + Math.round(n).toLocaleString();
+}
+
+function fmtMoneyFull(n) {
+  return '$' + Math.round(n).toLocaleString();
+}
+
+// Range slider
+v('useful').addEventListener('input', function() {
+  v('useful-out').textContent = this.value + '%';
+});
+
+var chartCost = null, chartCompare = null;
+
+var WEEK_MEETINGS = [
+  { id:'standup',  emoji:'📊', name:'Status standups' },
+  { id:'team',     emoji:'🧠', name:'Team meetings' },
+  { id:'1on1',     emoji:'👤', name:'1-on-1s' },
+  { id:'allhands', emoji:'🏢', name:'All hands' },
+  { id:'client',   emoji:'🤝', name:'External / client' },
+  { id:'adhoc',    emoji:'💡', name:'Ad hoc / unplanned' }
+];
+
+var MEETING_COLORS = ['#c0392b','#e67e22','#d4ac0d','#1a6b42','#1a4a7a','#7c5cbf'];
+
+function hrlyRate(annualSalary) {
+  return annualSalary / 2080;
+}
+
+function calculate() {
+  // Single meeting
+  var att      = parseInt(v('attendees').value) || 1;
+  var dur      = parseInt(v('duration').value) || 60;
+  var sal      = parseInt(v('avg-salary').value) || 80000;
+  var useful   = parseInt(v('useful').value) / 100;
+  var mtype    = v('meeting-type').value;
+
+  var singleCostTotal  = hrlyRate(sal) * (dur/60) * att;
+  var singleWasted     = singleCostTotal * (1 - useful);
+
+  // Weekly meetings
+  var weeklySal  = parseInt(v('weekly-salary').value) || 80000;
+  var weeklyAvg  = parseInt(v('avg-weekly-salary').value) || 80000;
+  var weeklyData = [];
+  var totalWeeklyCost = 0;
+  var totalWeeklyMins = 0;
+  var totalMyMins = 0;
+  var totalContextSwitches = 0;
+
+  for (var i=0; i<WEEK_MEETINGS.length; i++) {
+    var wm = WEEK_MEETINGS[i];
+    var freq = parseInt(v('wm-'+wm.id+'-freq').value) || 0;
+    var wdur = parseInt(v('wm-'+wm.id+'-dur').value) || 30;
+    var watt = parseInt(v('wm-'+wm.id+'-att').value) || 2;
+    var cost = hrlyRate(weeklyAvg) * (wdur/60) * watt * freq;
+    var myMins = wdur * freq;
+    totalWeeklyCost += cost;
+    totalWeeklyMins += wdur * freq * watt;
+    totalMyMins += myMins;
+    totalContextSwitches += freq;
+    weeklyData.push({ id:wm.id, emoji:wm.emoji, name:wm.name, freq:freq, dur:wdur, att:watt, cost:cost, myMins:myMins });
+  }
+
+  var annualCost    = totalWeeklyCost * 50;
+  var myHrsWeek     = totalMyMins / 60;
+  var workingHrsDay = 8;
+  var deepWorkHrs   = Math.max(0, workingHrsDay - myHrsWeek/5 - 1); // 1hr overhead
+  var contextLostMins = totalContextSwitches * 23; // 23min per switch
+  var wasted        = singleWasted;
+  var myCostWeek    = hrlyRate(weeklySal) * myHrsWeek;
+
+  // Show results
+  v('results').style.display = 'block';
+  v('results').scrollIntoView({ behavior:'smooth', block:'start' });
+
+  v('single-cost').textContent = fmtMoneyFull(singleCostTotal);
+  v('single-sub').textContent  = att + ' people × ' + dur + ' mins';
+  v('weekly-cost').textContent = fmtMoney(totalWeeklyCost);
+
+  v('annual-cost').textContent  = fmtMoney(annualCost);
+  v('your-time').textContent    = myHrsWeek.toFixed(1) + ' hrs';
+  v('deep-work').textContent    = deepWorkHrs.toFixed(1) + ' hrs';
+
+  var wastedWeekly = totalWeeklyCost * (1 - useful);
+  v('wasted-cost').textContent = fmtMoney(wastedWeekly) + '/wk';
+
+  // Verdict
+  var vBg, vColor, vMsg;
+  var pctDay = (myHrsWeek / (5 * workingHrsDay)) * 100;
+  if (pctDay >= 50) {
+    vBg='#fdf0ee'; vColor='#c0392b';
+    vMsg = 'You spend ' + myHrsWeek.toFixed(1) + ' hours a week in meetings — ' + pctDay.toFixed(0) + '% of your working week. That leaves just ' + deepWorkHrs.toFixed(1) + ' hours of real focus time per day. At this level, you\'re a professional meeting attendee, not a producer.';
+  } else if (pctDay >= 30) {
+    vBg='#fef5e7'; vColor='#b7600a';
+    vMsg = 'Meetings consume ' + pctDay.toFixed(0) + '% of your week — ' + myHrsWeek.toFixed(1) + ' hours. That\'s significant. With ' + totalContextSwitches + ' context switches costing ~23 mins of focus each, you\'re losing ' + Math.round(contextLostMins/60*10)/10 + ' additional hours just recovering from interruptions.';
+  } else if (pctDay >= 15) {
+    vBg='#fefce8'; vColor='#7a6020';
+    vMsg = 'Moderate meeting load at ' + pctDay.toFixed(0) + '% of your week. Manageable, but watch for meeting creep — it tends to grow over time. The company is spending ' + fmtMoney(annualCost) + ' annually on these meetings.';
+  } else {
+    vBg='#edf7f2'; vColor='#1a6b42';
+    vMsg = 'Lean meeting culture! Only ' + pctDay.toFixed(0) + '% of your week in meetings means plenty of deep work time. Make sure the meetings you do have are earning their cost of ' + fmtMoney(annualCost) + '/year.';
+  }
+  var ve = v('verdict');
+  ve.style.background = vBg; ve.style.color = vColor; ve.style.borderColor = vColor + '44';
+  ve.textContent = vMsg;
+
+  // Chart — cost by type
+  var cLabels=[], cData=[], cColors=[];
+  for (var j=0; j<weeklyData.length; j++) {
+    if (weeklyData[j].cost > 0) {
+      cLabels.push(weeklyData[j].name);
+      cData.push(Math.round(weeklyData[j].cost));
+      cColors.push(MEETING_COLORS[j]);
+    }
+  }
+  if (chartCost) chartCost.destroy();
+  chartCost = new Chart(v('costChart'), {
+    type: 'bar',
+    data: { labels: cLabels, datasets: [{ data: cData, backgroundColor: cColors.map(function(c){return c+'cc';}), borderColor: cColors, borderWidth: 1, borderRadius: 6 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend:{display:false}, tooltip:{ callbacks:{ label: function(ctx){ return '$'+ctx.parsed.y.toLocaleString(); } } } },
+      scales: {
+        y: { ticks:{ callback:function(val){ return '$'+val.toLocaleString(); }, font:{size:11}, color:'#9a9080' }, grid:{color:'rgba(40,30,10,0.05)'} },
+        x: { ticks:{ font:{size:11}, color:'#9a9080', maxRotation:30 }, grid:{display:false} }
+      }
+    }
+  });
+
+  // Weekly breakdown list
+  var maxCost = 0;
+  for (var k=0; k<weeklyData.length; k++) if (weeklyData[k].cost > maxCost) maxCost = weeklyData[k].cost;
+  var wbHtml = '';
+  for (var l=0; l<weeklyData.length; l++) {
+    var wd = weeklyData[l];
+    if (wd.freq === 0) continue;
+    var pct = maxCost > 0 ? Math.round(wd.cost/maxCost*100) : 0;
+    wbHtml += '<div class="week-result-row">' +
+      '<span class="wrr-icon">'+wd.emoji+'</span>' +
+      '<div class="wrr-body">' +
+        '<div class="wrr-top"><span class="wrr-name">'+wd.name+'</span><span class="wrr-cost">'+fmtMoneyFull(wd.cost)+'/wk</span></div>' +
+        '<div class="wrr-sub">'+wd.freq+'×/week · '+wd.dur+' mins · '+wd.att+' people · '+Math.round(wd.myMins)+' mins of your time</div>' +
+        '<div class="wrr-bar-wrap"><div class="wrr-bar-fill" style="width:'+pct+'%"></div></div>' +
+      '</div>' +
+    '</div>';
+  }
+  if (wbHtml === '') wbHtml = '<p style="color:var(--text3);font-size:13px">No weekly meetings entered.</p>';
+  v('week-breakdown').innerHTML = wbHtml;
+
+  // Productivity impact
+  var contextHrs = contextLostMins / 60;
+  var effectiveWorkHrs = Math.max(0, (5 * workingHrsDay) - myHrsWeek - contextHrs - 5);
+  var meetingPct = Math.min(100, Math.round(myHrsWeek / (5 * workingHrsDay) * 100));
+  var impacts = [
+    { emoji:'🧠', title:'Context-switching recovery time', val: contextHrs.toFixed(1) + ' hrs/week', sub: totalContextSwitches + ' meetings × 23 min recovery (UC Irvine research)' },
+    { emoji:'⚡', title:'Effective deep work per week', val: effectiveWorkHrs.toFixed(1) + ' hrs', sub: 'After meetings, recovery time & admin overhead' },
+    { emoji:'📅', title:'Your time in meetings/year', val: Math.round(myHrsWeek * 50) + ' hrs', sub: Math.round(myHrsWeek * 50 / 8) + ' full working days per year' },
+    { emoji:'💸', title:'Your personal time cost/year', val: fmtMoney(myCostWeek * 50), sub: 'Value of your time spent in meetings annually' },
+    { emoji:'🎯', title:'Meeting % of your working week', val: meetingPct + '%', sub: meetingPct >= 40 ? 'Critical — consider pushing back' : meetingPct >= 25 ? 'High — review recurring meetings' : 'Manageable' },
+    { emoji:'🔕', title:'Focus blocks lost per week', val: Math.round(totalContextSwitches * 1.4) + ' blocks', sub: 'Estimated 90-min deep work sessions disrupted' }
+  ];
+
+  var igHtml = '';
+  for (var m=0; m<impacts.length; m++) {
+    var imp = impacts[m];
+    igHtml += '<div class="impact-card">' +
+      '<span class="impact-emoji">'+imp.emoji+'</span>' +
+      '<div class="impact-title">'+imp.title+'</div>' +
+      '<div class="impact-val">'+imp.val+'</div>' +
+      '<div class="impact-sub">'+imp.sub+'</div>' +
+    '</div>';
+  }
+  v('impact-grid').innerHTML = igHtml;
+
+  // Compare chart — what annual budget could buy
+  var compareLabels = [
+    'Annual meeting cost',
+    'Senior engineer salary',
+    'New product features (est.)',
+    'Marketing campaigns',
+    'Team off-sites (x' + Math.max(1,Math.floor(annualCost/5000)) + ')',
+    'Training & development'
+  ];
+  var compareData = [
+    Math.round(annualCost),
+    90000,
+    Math.round(annualCost * 0.8),
+    Math.round(annualCost * 0.6),
+    Math.max(1,Math.floor(annualCost/5000)) * 5000,
+    Math.round(annualCost * 0.3)
+  ];
+  var compareColors = ['#c0392b','#1a4a7a','#1a6b42','#7c5cbf','#b7600a','#2e7d9a'];
+
+  if (chartCompare) chartCompare.destroy();
+  chartCompare = new Chart(v('compareChart'), {
+    type: 'bar',
+    data: {
+      labels: compareLabels,
+      datasets: [{ data: compareData, backgroundColor: compareColors.map(function(c){return c+'bb';}), borderColor: compareColors, borderWidth: 1, borderRadius: 5 }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend:{display:false}, tooltip:{ callbacks:{ label:function(ctx){ return '$'+ctx.parsed.x.toLocaleString(); } } } },
+      scales: {
+        x: { ticks:{ callback:function(val){ return val>=1000?'$'+(val/1000).toFixed(0)+'k':'$'+val; }, font:{size:11}, color:'#9a9080' }, grid:{color:'rgba(40,30,10,0.05)'} },
+        y: { ticks:{ font:{size:11}, color:'#5a5040' }, grid:{display:false} }
+      }
+    }
+  });
+}
+</script>
+</body>
+</html>
