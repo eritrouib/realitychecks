@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How Much Sleep Are You Actually Getting?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0d0d1a;
+  --surface: #13131f;
+  --surface2: #1a1a2e;
+  --surface3: #22223a;
+  --border: rgba(180,160,255,0.08);
+  --border2: rgba(180,160,255,0.16);
+  --text: #ece8ff;
+  --text2: #8880aa;
+  --text3: #4a4870;
+  --purple: #7c5cbf;
+  --purple-light: #b090f0;
+  --purple-bg: rgba(124,92,191,0.15);
+  --indigo: #4f46e5;
+  --blue: #3b82f6;
+  --green: #34d399;
+  --green-bg: rgba(52,211,153,0.1);
+  --amber: #fbbf24;
+  --amber-bg: rgba(251,191,36,0.1);
+  --red: #f87171;
+  --red-bg: rgba(248,113,113,0.1);
+  --accent: #7c5cbf;
+  --star: #fbbf24;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+header {
+  padding: 3.5rem 2rem 2.5rem;
+  text-align: center;
+  background: radial-gradient(ellipse at 50% 0%, #1a0a3a 0%, var(--bg) 70%);
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+.stars {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background-image:
+    radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 30% 10%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 55% 30%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 75% 15%, rgba(255,255,255,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 90% 25%, rgba(255,255,255,0.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 20% 50%, rgba(255,255,255,0.2) 0%, transparent 100%),
+    radial-gradient(1px 1px at 85% 45%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 45% 8%, rgba(255,255,255,0.7) 0%, transparent 100%),
+    radial-gradient(1px 1px at 65% 40%, rgba(255,255,255,0.3) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 5% 35%, rgba(255,255,255,0.5) 0%, transparent 100%);
+  pointer-events: none;
+}
+header h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  line-height: 1.15;
+  margin-bottom: .75rem;
+  position: relative;
+}
+header h1 em { font-style: italic; color: var(--purple-light); }
+header p { color: var(--text2); font-size: 15px; max-width: 520px; margin: 0 auto; position: relative; }
+
+.container { max-width: 860px; margin: 2rem auto; padding: 0 1.25rem 4rem; }
+
+.section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.section-title {
+  font-size: 11px; font-weight: 500;
+  letter-spacing: .09em; text-transform: uppercase;
+  color: var(--text3); margin-bottom: 1.25rem;
+}
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+@media(max-width:620px) { .two-col { grid-template-columns: 1fr; } }
+
+.field { margin-bottom: 1rem; }
+.field:last-child { margin-bottom: 0; }
+.field label { display: block; font-size: 13px; color: var(--text2); margin-bottom: .4rem; font-weight: 500; }
+.field-sub { font-size: 11px; color: var(--text3); margin-top: .25rem; line-height: 1.4; }
+
+select, input[type=number] {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text);
+  outline: none;
+}
+select:focus, input[type=number]:focus { border-color: var(--accent); }
+
+input[type=range] {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 4px;
+  background: var(--surface3); border-radius: 2px;
+  outline: none; cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--purple-light);
+  border: 2px solid var(--bg);
+  cursor: pointer;
+}
+input[type=range]::-moz-range-thumb {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--purple-light);
+  border: 2px solid var(--bg); cursor: pointer;
+}
+.range-row { display: flex; align-items: center; gap: 10px; margin-top: .4rem; }
+.range-row input[type=range] { flex: 1; }
+.range-val { font-size: 14px; font-weight: 500; min-width: 44px; text-align: right; color: var(--text); }
+
+/* Day grid */
+.day-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: .5rem;
+  margin-bottom: .75rem;
+}
+@media(max-width:540px) { .day-grid { grid-template-columns: repeat(4, 1fr); } }
+
+.day-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: .65rem .5rem;
+  text-align: center;
+}
+.day-name { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: .05em; margin-bottom: .4rem; }
+.day-card input[type=number] {
+  padding: 6px 4px; font-size: 13px; text-align: center;
+  border-radius: 6px; margin-bottom: .3rem;
+}
+.day-bar-wrap { height: 40px; background: var(--surface3); border-radius: 4px; overflow: hidden; display: flex; align-items: flex-end; }
+.day-bar { width: 100%; border-radius: 4px 4px 0 0; transition: height .3s ease; }
+
+.calc-btn {
+  display: block; width: 100%;
+  background: var(--purple); color: white;
+  border: none; border-radius: 12px;
+  padding: 1.1rem 2rem; font-size: 16px;
+  font-family: 'DM Sans', sans-serif; font-weight: 500;
+  cursor: pointer; margin: 1.5rem 0; transition: opacity .15s;
+}
+.calc-btn:hover { opacity: .85; }
+.calc-btn:active { opacity: .7; }
+
+#results { display: none; }
+
+/* Debt meter */
+.debt-meter {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+.debt-label { font-size: 11px; letter-spacing: .09em; text-transform: uppercase; color: var(--text3); margin-bottom: .5rem; }
+.debt-number {
+  font-family: 'DM Serif Display', serif;
+  font-size: 5rem; line-height: 1;
+  margin-bottom: .25rem;
+}
+.debt-sub { font-size: 14px; color: var(--text2); margin-bottom: 1.25rem; }
+
+.meter-track {
+  height: 12px; background: var(--surface3);
+  border-radius: 6px; overflow: hidden; margin: .75rem 0;
+  position: relative;
+}
+.meter-fill {
+  height: 100%; border-radius: 6px;
+  transition: width .8s cubic-bezier(.34,1.2,.64,1);
+}
+.meter-labels {
+  display: flex; justify-content: space-between;
+  font-size: 11px; color: var(--text3); margin-top: .3rem;
+}
+
+.stats-grid {
+  display: grid; grid-template-columns: repeat(4,1fr);
+  gap: .75rem; margin-bottom: 1rem;
+}
+@media(max-width:560px) { .stats-grid { grid-template-columns: 1fr 1fr; } }
+
+.stat {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: .9rem 1rem; text-align: center;
+}
+.s-label { font-size: 11px; color: var(--text3); margin-bottom: .25rem; }
+.s-val { font-size: 1.2rem; font-weight: 500; line-height: 1.2; color: var(--text); }
+.s-sub { font-size: 11px; color: var(--text3); margin-top: .2rem; }
+
+.verdict {
+  border-radius: 10px; padding: 1rem 1.25rem;
+  font-size: 14px; line-height: 1.65;
+  margin-bottom: 1rem; border: 1px solid transparent;
+}
+
+.chart-section {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 1.5rem; margin-bottom: 1rem;
+}
+.chart-title { font-size: 13px; font-weight: 500; color: var(--text2); margin-bottom: 1rem; }
+
+/* Impact cards */
+.impact-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: .65rem; margin-bottom: 1rem;
+}
+@media(max-width:500px) { .impact-grid { grid-template-columns: 1fr; } }
+
+.impact-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 1.1rem 1.2rem;
+}
+.ic-emoji { font-size: 22px; margin-bottom: .35rem; display: block; }
+.ic-title { font-size: 12px; color: var(--text2); margin-bottom: .15rem; }
+.ic-val { font-size: 1.2rem; font-weight: 500; line-height: 1.2; }
+.ic-sub { font-size: 11px; color: var(--text3); margin-top: .2rem; line-height: 1.4; }
+
+/* Recovery plan */
+.recovery-grid {
+  display: grid; grid-template-columns: repeat(3,1fr);
+  gap: .65rem; margin-bottom: 1rem;
+}
+@media(max-width:500px) { .recovery-grid { grid-template-columns: 1fr; } }
+
+.recovery-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 1.1rem;
+  text-align: center;
+}
+.rc-title { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: .06em; margin-bottom: .5rem; }
+.rc-val { font-size: 1.4rem; font-weight: 500; color: var(--purple-light); line-height: 1.2; margin-bottom: .25rem; }
+.rc-sub { font-size: 11px; color: var(--text3); line-height: 1.4; }
+
+/* Tips */
+.tip-list { margin-bottom: 1rem; }
+.tip-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: .7rem .9rem; border-radius: 9px;
+  margin-bottom: .4rem;
+  background: var(--surface2); border: 1px solid var(--border);
+  font-size: 13px; line-height: 1.5;
+}
+.tip-emoji { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+.tip-text { color: var(--text2); }
+.tip-text strong { color: var(--text); }
+
+.note-box {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 1rem 1.2rem;
+  font-size: 13px; color: var(--text2); line-height: 1.65;
+}
+
+footer {
+  background: var(--surface); border-top: 1px solid var(--border);
+  color: var(--text3); text-align: center;
+  padding: 1.5rem 2rem; font-size: 12.5px; line-height: 1.7;
+}
+footer a { color: var(--text2); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="stars"></div>
+  <h1>How much sleep are you <em>actually</em> getting?</h1>
+  <p>Enter your week of sleep and quality factors. See your sleep debt, cognitive impact, and exactly how long it'll take to recover.</p>
+</header>
+
+<div class="container">
+
+  <!-- ABOUT YOU -->
+  <div class="section">
+    <p class="section-title">About you</p>
+    <div class="two-col">
+      <div class="field">
+        <label for="age">Age</label>
+        <select id="age">
+          <option value="8">Child (6–13) — needs 9–11 hrs</option>
+          <option value="9">Teen (14–17) — needs 8–10 hrs</option>
+          <option value="8" selected>Young adult (18–25) — needs 7–9 hrs</option>
+          <option value="7.5">Adult (26–64) — needs 7–9 hrs</option>
+          <option value="7">Older adult (65+) — needs 7–8 hrs</option>
+        </select>
+        <p class="field-sub">Target sleep hours based on NSF guidelines</p>
+      </div>
+      <div class="field">
+        <label for="target">Your personal sleep target (hrs)</label>
+        <input type="number" id="target" min="5" max="12" value="8" step="0.5">
+        <p class="field-sub">Most adults need 7–9 hrs. Adjust to what feels right for you.</p>
+      </div>
+    </div>
+    <div class="field">
+      <label>How long have you been running this sleep pattern? — <span id="chronic-out" style="font-weight:500;color:var(--text)">A few weeks</span></label>
+      <div class="range-row">
+        <input type="range" id="chronic" min="0" max="4" value="1" step="1">
+      </div>
+      <p class="field-sub">Chronic sleep debt compounds — the longer it goes on, the harder it is to recover</p>
+    </div>
+  </div>
+
+  <!-- SLEEP THIS WEEK -->
+  <div class="section">
+    <p class="section-title">Hours slept each night this week</p>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:1rem">Enter actual hours of sleep — not time in bed. Be honest.</p>
+    <div class="day-grid" id="day-grid"></div>
+    <p class="field-sub" style="margin-top:.5rem">Tap into each box to change the hours. Bars update as you type.</p>
+  </div>
+
+  <!-- QUALITY FACTORS -->
+  <div class="section">
+    <p class="section-title">Sleep quality factors</p>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:1.1rem">These don't just reduce quantity — they reduce the <em>quality</em> of sleep you get, meaning 7 hrs with these factors can feel like 5.</p>
+
+    <div class="field">
+      <label>Alcohol in the last 3 hours before bed — <span id="alc-out" style="font-weight:500;color:var(--text)">None</span></label>
+      <div class="range-row">
+        <input type="range" id="alc" min="0" max="4" value="0" step="1">
+      </div>
+      <p class="field-sub">Alcohol suppresses REM sleep and causes fragmented sleep in the second half of the night</p>
+    </div>
+
+    <div class="field">
+      <label>Screen use in the hour before bed — <span id="screen-out" style="font-weight:500;color:var(--text)">None</span></label>
+      <div class="range-row">
+        <input type="range" id="screen" min="0" max="4" value="0" step="1">
+      </div>
+      <p class="field-sub">Blue light suppresses melatonin by up to 50%, delaying sleep onset and reducing deep sleep</p>
+    </div>
+
+    <div class="field">
+      <label>Caffeine after 2pm — <span id="caff-out" style="font-weight:500;color:var(--text)">None</span></label>
+      <div class="range-row">
+        <input type="range" id="caff" min="0" max="4" value="0" step="1">
+      </div>
+      <p class="field-sub">Caffeine has a half-life of 5–7 hours — an afternoon coffee is still in your system at midnight</p>
+    </div>
+
+    <div class="field">
+      <label>Stress / anxiety level at bedtime — <span id="stress-out" style="font-weight:500;color:var(--text)">Low</span></label>
+      <div class="range-row">
+        <input type="range" id="stress" min="0" max="4" value="1" step="1">
+      </div>
+      <p class="field-sub">Cortisol from stress actively prevents deep sleep and keeps you in lighter sleep stages</p>
+    </div>
+
+    <div class="field">
+      <label for="consistency">Sleep schedule consistency</label>
+      <select id="consistency">
+        <option value="0">Very consistent (same time ±30 min every day)</option>
+        <option value="1" selected>Mostly consistent (±1 hour variation)</option>
+        <option value="2">Inconsistent (weekday/weekend shift of 1–2 hrs)</option>
+        <option value="3">Very inconsistent (shift of 2+ hrs, irregular)</option>
+      </select>
+      <p class="field-sub">Irregular sleep times disrupt your circadian rhythm, reducing sleep quality even if hours are sufficient</p>
+    </div>
+  </div>
+
+  <button class="calc-btn" onclick="calculate()">Calculate my sleep debt 🌙</button>
+
+  <div id="results">
+
+    <!-- Debt meter -->
+    <div class="debt-meter">
+      <p class="debt-label">Your weekly sleep debt</p>
+      <p class="debt-number" id="debt-val">0h</p>
+      <p class="debt-sub" id="debt-sub">of sleep owed to your body</p>
+      <div class="meter-track">
+        <div class="meter-fill" id="meter-fill" style="width:0%"></div>
+      </div>
+      <div class="meter-labels">
+        <span>None</span><span>Mild</span><span>Moderate</span><span>Severe</span><span>Critical</span>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat">
+        <p class="s-label">Avg sleep/night</p>
+        <p class="s-val" id="s-avg">—</p>
+        <p class="s-sub" id="s-avg-sub">vs. target</p>
+      </div>
+      <div class="stat">
+        <p class="s-label">Effective sleep quality</p>
+        <p class="s-val" id="s-quality">—</p>
+        <p class="s-sub">after quality factors</p>
+      </div>
+      <div class="stat">
+        <p class="s-label">Recovery time</p>
+        <p class="s-val" id="s-recovery">—</p>
+        <p class="s-sub">nights to repay debt</p>
+      </div>
+      <div class="stat">
+        <p class="s-label">Annual debt (projected)</p>
+        <p class="s-val" id="s-annual">—</p>
+        <p class="s-sub">if pattern continues</p>
+      </div>
+    </div>
+
+    <div class="verdict" id="verdict"></div>
+
+    <!-- Sleep chart -->
+    <div class="chart-section">
+      <p class="chart-title">Your sleep this week vs. target</p>
+      <div style="position:relative;width:100%;height:240px">
+        <canvas id="sleepChart" role="img" aria-label="Bar chart showing sleep hours per night this week compared to target"></canvas>
+      </div>
+    </div>
+
+    <!-- Cognitive & physical impact -->
+    <div class="section">
+      <p class="section-title">What this is doing to you right now</p>
+      <div class="impact-grid" id="impact-grid"></div>
+    </div>
+
+    <!-- Cumulative chart -->
+    <div class="chart-section">
+      <p class="chart-title">Cumulative sleep debt over the year if this pattern continues</p>
+      <div style="position:relative;width:100%;height:240px">
+        <canvas id="cumulChart" role="img" aria-label="Line chart showing cumulative sleep debt over 52 weeks"></canvas>
+      </div>
+    </div>
+
+    <!-- Recovery plan -->
+    <div class="section">
+      <p class="section-title">Recovery plan</p>
+      <div class="recovery-grid" id="recovery-grid"></div>
+    </div>
+
+    <!-- Tips -->
+    <div class="section">
+      <p class="section-title">Personalised tips based on your inputs</p>
+      <div class="tip-list" id="tip-list"></div>
+    </div>
+
+    <div class="note-box">
+      <strong style="color:var(--text)">Sources:</strong> Sleep need ranges from National Sleep Foundation guidelines. Sleep debt concept: Dr Matthew Walker, <em>Why We Sleep</em> (2017). Quality penalty factors based on: Walker et al. (alcohol/REM), Harvard Medical School (caffeine half-life), Chang et al. PNAS 2014 (blue light/melatonin). Chronic debt compounding: Van Dongen et al. Sleep (2003). Recovery: Belenky et al. Sleep (2003) — full cognitive recovery requires multiple full-sleep nights, not just one.
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  Built as an informational tool. Not a substitute for medical advice.<br>
+  <a href="https://www.sleepfoundation.org/how-sleep-works/how-much-sleep-do-we-really-need" target="_blank">National Sleep Foundation guidelines</a> · Matthew Walker, <em>Why We Sleep</em> (2017)
+</footer>
+
+<script>
+var DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+var DEFAULT_HOURS = [7, 6.5, 7, 6, 7.5, 8, 7.5];
+
+var ALC_LABELS    = ['None','1 drink','2 drinks','3 drinks','4+ drinks'];
+var SCREEN_LABELS = ['None','Light (< 30 min)','Moderate (30–60 min)','Heavy (60–90 min)','Very heavy (90+ min)'];
+var CAFF_LABELS   = ['None','1 drink','2 drinks','3 drinks','4+ drinks'];
+var STRESS_LABELS = ['Low','Mild','Moderate','High','Very high'];
+var CHRONIC_LABELS= ['Just this week','A few weeks','1–2 months','3–6 months','6+ months / years'];
+
+function v(id) { return document.getElementById(id); }
+
+// Build day inputs
+var dayGridHtml = '';
+for (var d=0; d<7; d++) {
+  dayGridHtml += '<div class="day-card">' +
+    '<div class="day-name">'+DAYS[d]+'</div>' +
+    '<input type="number" id="day-'+d+'" min="0" max="12" value="'+DEFAULT_HOURS[d]+'" step="0.5" oninput="updateBar('+d+')">' +
+    '<div class="day-bar-wrap"><div class="day-bar" id="bar-'+d+'" style="height:0%"></div></div>' +
+  '</div>';
+}
+v('day-grid').innerHTML = dayGridHtml;
+
+function updateBar(d) {
+  var hrs = parseFloat(v('day-'+d).value) || 0;
+  var pct = Math.min(100, (hrs/10)*100);
+  var color = hrs >= 7 ? '#34d399' : hrs >= 6 ? '#fbbf24' : '#f87171';
+  v('bar-'+d).style.height = pct + '%';
+  v('bar-'+d).style.background = color;
+}
+for (var i=0; i<7; i++) updateBar(i);
+
+// Slider labels
+v('alc').addEventListener('input',    function(){ v('alc-out').textContent    = ALC_LABELS[this.value]; });
+v('screen').addEventListener('input', function(){ v('screen-out').textContent = SCREEN_LABELS[this.value]; });
+v('caff').addEventListener('input',   function(){ v('caff-out').textContent   = CAFF_LABELS[this.value]; });
+v('stress').addEventListener('input', function(){ v('stress-out').textContent = STRESS_LABELS[this.value]; });
+v('chronic').addEventListener('input',function(){ v('chronic-out').textContent= CHRONIC_LABELS[this.value]; });
+v('age').addEventListener('change',   function(){ v('target').value = this.value; });
+
+var chartA = null, chartB = null;
+
+function calculate() {
+  var target   = parseFloat(v('target').value) || 8;
+  var chronic  = parseInt(v('chronic').value);
+  var alc      = parseInt(v('alc').value);
+  var screen   = parseInt(v('screen').value);
+  var caff     = parseInt(v('caff').value);
+  var stress   = parseInt(v('stress').value);
+  var consist  = parseInt(v('consistency').value);
+
+  // Collect daily hours
+  var hours = [];
+  var totalHours = 0;
+  for (var d=0; d<7; d++) {
+    var h = parseFloat(v('day-'+d).value) || 0;
+    hours.push(h);
+    totalHours += h;
+  }
+  var avgHours = totalHours / 7;
+
+  // Quality penalty (reduces effective sleep)
+  var qualityPenalty = 0;
+  qualityPenalty += [0, 0.25, 0.5, 0.75, 1.0][alc];
+  qualityPenalty += [0, 0.1,  0.2, 0.35, 0.5][screen];
+  qualityPenalty += [0, 0.1,  0.2, 0.3,  0.5][caff];
+  qualityPenalty += [0, 0.15, 0.35, 0.6, 0.9][stress];
+  qualityPenalty += [0, 0.1,  0.25, 0.5][consist];
+  var effectiveAvg = Math.max(0, avgHours - qualityPenalty);
+
+  // Weekly debt
+  var weeklyDebt = Math.max(0, (target * 7) - totalHours);
+  var effectiveDebt = Math.max(0, (target * 7) - (effectiveAvg * 7));
+
+  // Chronic multiplier
+  var chronicMult = [1, 1.15, 1.3, 1.5, 1.8][chronic];
+  var adjustedDebt = effectiveDebt * chronicMult;
+
+  // Recovery — you can only repay ~1hr extra per night safely
+  var recoveryNights = Math.ceil(adjustedDebt / 1);
+  var recoveryWeeks  = Math.ceil(recoveryNights / 7);
+
+  // Annual projection
+  var annualDebt = weeklyDebt * 52;
+
+  v('results').style.display = 'block';
+  v('results').scrollIntoView({ behavior:'smooth', block:'start' });
+
+  // Debt meter
+  var debtLevel = adjustedDebt <= 1 ? 'none' : adjustedDebt <= 3 ? 'mild' : adjustedDebt <= 7 ? 'moderate' : adjustedDebt <= 12 ? 'severe' : 'critical';
+  var meterPct  = Math.min(100, Math.round(adjustedDebt / 15 * 100));
+  var meterColor = debtLevel==='none'?'#34d399':debtLevel==='mild'?'#a3e635':debtLevel==='moderate'?'#fbbf24':debtLevel==='severe'?'#fb923c':'#f87171';
+
+  v('debt-val').textContent = adjustedDebt.toFixed(1) + 'h';
+  v('debt-val').style.color = meterColor;
+  v('debt-sub').textContent = debtLevel==='none' ? 'You\'re in good shape — no significant debt' : 'of sleep owed to your body this week';
+  setTimeout(function(){ v('meter-fill').style.width = meterPct+'%'; v('meter-fill').style.background = meterColor; }, 100);
+
+  v('s-avg').textContent     = avgHours.toFixed(1) + 'h';
+  v('s-avg').style.color     = avgHours >= target ? '#34d399' : avgHours >= target-1 ? '#fbbf24' : '#f87171';
+  v('s-avg-sub').textContent = 'target: ' + target + 'h';
+  v('s-quality').textContent = effectiveAvg.toFixed(1) + 'h';
+  v('s-quality').style.color = effectiveAvg >= target ? '#34d399' : effectiveAvg >= target-1.5 ? '#fbbf24' : '#f87171';
+  v('s-recovery').textContent = recoveryNights <= 0 ? 'None needed' : recoveryNights + ' nights';
+  v('s-annual').textContent   = annualDebt.toFixed(0) + 'h';
+  v('s-annual').style.color   = annualDebt > 50 ? '#f87171' : annualDebt > 20 ? '#fbbf24' : '#34d399';
+
+  // Verdict
+  var vBg, vColor, vMsg;
+  if (debtLevel === 'critical') {
+    vBg='rgba(248,113,113,0.12)'; vColor='#f87171';
+    vMsg = 'Critical sleep debt of '+adjustedDebt.toFixed(1)+'hrs — your brain is functioning in a significantly impaired state. Cognitive performance, immune function, and emotional regulation are all substantially degraded. Recovery will take '+recoveryWeeks+' week'+(recoveryWeeks>1?'s':'')+' of getting to bed 1hr earlier each night.';
+  } else if (debtLevel === 'severe') {
+    vBg='rgba(251,146,60,0.12)'; vColor='#fb923c';
+    vMsg = 'Severe sleep debt. Research shows '+adjustedDebt.toFixed(1)+'hrs of debt impairs reaction time equivalent to being legally drunk. You need '+recoveryNights+' nights of catch-up sleep — that\'s '+recoveryWeeks+' week'+(recoveryWeeks>1?'s':'')+' of consistent earlier bedtimes.';
+  } else if (debtLevel === 'moderate') {
+    vBg='rgba(251,191,36,0.12)'; vColor='#fbbf24';
+    vMsg = 'Moderate sleep debt building up. '+adjustedDebt.toFixed(1)+'hrs this week after quality factors. You\'re probably used to feeling this way — but that\'s not the same as it being fine. Takes '+recoveryNights+' extra-sleep nights to fully clear.';
+  } else if (debtLevel === 'mild') {
+    vBg='rgba(163,230,53,0.1)'; vColor='#a3e635';
+    vMsg = 'Mild debt — '+adjustedDebt.toFixed(1)+'hrs. Not alarming but worth addressing. A couple of earlier nights this week should clear it. Watch the quality factors — they\'re costing you more than you think.';
+  } else {
+    vBg='rgba(52,211,153,0.1)'; vColor='#34d399';
+    vMsg = 'Well slept! Your sleep debt is minimal. Keep the consistency going — irregular schedules are the most underrated disruptor of sleep quality.';
+  }
+  var ve = v('verdict');
+  ve.style.background=vBg; ve.style.color=vColor; ve.style.borderColor=vColor+'44';
+  ve.textContent = vMsg;
+
+  // Sleep chart
+  var barColors = hours.map(function(h){
+    return h >= target ? '#34d39988' : h >= target-1 ? '#fbbf2488' : '#f8717188';
+  });
+  var borderColors = hours.map(function(h){
+    return h >= target ? '#34d399' : h >= target-1 ? '#fbbf24' : '#f87171';
+  });
+
+  if (chartA) chartA.destroy();
+  chartA = new Chart(v('sleepChart'), {
+    type: 'bar',
+    data: {
+      labels: DAYS,
+      datasets: [
+        { label:'Hours slept', data:hours, backgroundColor:barColors, borderColor:borderColors, borderWidth:1.5, borderRadius:6 },
+        { label:'Target', data:Array(7).fill(target), type:'line', borderColor:'rgba(180,160,255,0.5)', borderWidth:2, borderDash:[5,4], pointRadius:0, fill:false }
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:function(ctx){ return ctx.dataset.label+': '+ctx.parsed.y+'h'; } } } },
+      scales:{
+        y:{ min:0, max:12, ticks:{ callback:function(v){ return v+'h'; }, font:{size:11}, color:'#4a4870' }, grid:{ color:'rgba(180,160,255,0.06)' } },
+        x:{ ticks:{ font:{size:12}, color:'#8880aa' }, grid:{display:false} }
+      }
+    }
+  });
+
+  // Impact cards
+  var debtHrs = adjustedDebt;
+  var impacts = [
+    { emoji:'🧠', title:'Cognitive performance', val: debtHrs>10?'↓40%':debtHrs>7?'↓30%':debtHrs>4?'↓20%':debtHrs>1?'↓10%':'Normal', sub:'Memory consolidation, decision-making and creativity all impaired', color: debtHrs>4?'#f87171':debtHrs>1?'#fbbf24':'#34d399' },
+    { emoji:'⚡', title:'Reaction time', val: debtHrs>10?'Like 3× legal limit':debtHrs>7?'Like 2× legal limit':debtHrs>4?'Like over legal limit':debtHrs>1?'Slightly slowed':'Normal', sub:'AAA Foundation research on drowsy driving', color: debtHrs>4?'#f87171':debtHrs>1?'#fbbf24':'#34d399' },
+    { emoji:'😤', title:'Emotional regulation', val: debtHrs>7?'Severely impaired':debtHrs>4?'Significantly impaired':debtHrs>1?'Mildly impaired':'Normal', sub:'Amygdala reactivity increases 60% with sleep loss (Walker 2017)', color: debtHrs>4?'#f87171':debtHrs>1?'#fbbf24':'#34d399' },
+    { emoji:'🛡️', title:'Immune function', val: debtHrs>7?'↓70% NK cells':debtHrs>4?'↓50% NK cells':debtHrs>1?'↓20% NK cells':'Normal', sub:'Natural killer cells suppressed; 1 night of 4hrs = 70% reduction', color: debtHrs>4?'#f87171':debtHrs>1?'#fbbf24':'#34d399' },
+    { emoji:'⚖️', title:'Hunger / weight', val: debtHrs>4?'Ghrelin +24%':debtHrs>1?'Ghrelin +15%':'Normal', sub:'Sleep loss raises ghrelin (hunger hormone) and lowers leptin (fullness)', color: debtHrs>4?'#f87171':debtHrs>1?'#fbbf24':'#34d399' },
+    { emoji:'💪', title:'Athletic performance', val: debtHrs>7?'↓30% output':debtHrs>4?'↓20% output':debtHrs>1?'↓10% output':'Normal', sub:'Muscle recovery, coordination and stamina all affected by sleep debt', color: debtHrs>4?'#f87171':debtHrs>1?'#fbbf24':'#34d399' }
+  ];
+
+  var igHtml = '';
+  for (var m=0; m<impacts.length; m++) {
+    var imp = impacts[m];
+    igHtml += '<div class="impact-card"><span class="ic-emoji">'+imp.emoji+'</span><div class="ic-title">'+imp.title+'</div><div class="ic-val" style="color:'+imp.color+'">'+imp.val+'</div><div class="ic-sub">'+imp.sub+'</div></div>';
+  }
+  v('impact-grid').innerHTML = igHtml;
+
+  // Cumulative chart
+  var cumLabels=[], cumData=[];
+  var cumDebt = adjustedDebt;
+  for (var wk=1; wk<=52; wk++) {
+    cumLabels.push('Wk '+wk);
+    cumDebt += weeklyDebt;
+    cumData.push(Math.round(cumDebt * 10)/10);
+  }
+
+  if (chartB) chartB.destroy();
+  chartB = new Chart(v('cumulChart'), {
+    type: 'line',
+    data: {
+      labels: cumLabels,
+      datasets: [{
+        data: cumData,
+        borderColor: '#b090f0',
+        backgroundColor: 'rgba(176,144,240,0.08)',
+        borderWidth: 2,
+        pointRadius: 0,
+        fill: true,
+        tension: 0.4
+      }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:function(ctx){ return ctx.parsed.y.toFixed(1)+'h debt'; } } } },
+      scales:{
+        y:{ ticks:{ callback:function(val){ return val+'h'; }, font:{size:11}, color:'#4a4870' }, grid:{ color:'rgba(180,160,255,0.06)' } },
+        x:{ ticks:{ font:{size:10}, color:'#4a4870', maxTicksLimit:13 }, grid:{display:false} }
+      }
+    }
+  });
+
+  // Recovery grid
+  var gentleNights = Math.ceil(adjustedDebt / 0.5);
+  var moderateNights = Math.ceil(adjustedDebt / 1);
+  var aggressiveNights = Math.ceil(adjustedDebt / 1.5);
+  v('recovery-grid').innerHTML =
+    '<div class="recovery-card"><div class="rc-title">Gentle recovery</div><div class="rc-val">'+gentleNights+' nights</div><div class="rc-sub">Go to bed 30 min earlier each night. Sustainable and least disruptive.</div></div>' +
+    '<div class="recovery-card"><div class="rc-title">Standard recovery</div><div class="rc-val">'+moderateNights+' nights</div><div class="rc-sub">Sleep 1 hour extra per night. The recommended approach per sleep researchers.</div></div>' +
+    '<div class="recovery-card"><div class="rc-title">Weekend catch-up</div><div class="rc-val">'+Math.ceil(adjustedDebt/2)+' weekends</div><div class="rc-sub">2 hrs extra Sat & Sun. Partially effective but disrupts your circadian rhythm.</div></div>';
+
+  // Personalised tips
+  var tips = [];
+  if (alc >= 2) tips.push({ emoji:'🍷', text:'<strong>Stop drinking 3+ hours before bed.</strong> Alcohol fragments sleep in the second half of the night, robbing you of REM — even if it helps you fall asleep faster.' });
+  if (screen >= 2) tips.push({ emoji:'📱', text:'<strong>No screens 60 minutes before bed.</strong> Use Night Shift / warm screen modes if you must use a device. Blue light is suppressing your melatonin by up to 50%.' });
+  if (caff >= 2) tips.push({ emoji:'☕', text:'<strong>Cut off caffeine by 1–2pm.</strong> With a 5–7hr half-life, an afternoon coffee still has a quarter of its caffeine in your bloodstream at midnight.' });
+  if (stress >= 2) tips.push({ emoji:'🧘', text:'<strong>Wind down routine matters.</strong> Try 10 minutes of journaling, breathing exercises or light stretching before bed. High cortisol at bedtime is keeping you in lighter sleep stages.' });
+  if (consist >= 2) tips.push({ emoji:'⏰', text:'<strong>Fix your wake time first.</strong> A consistent wake time — even weekends — is the single most powerful anchor for your circadian rhythm. Bedtime will naturally follow.' });
+  if (avgHours < target - 1) tips.push({ emoji:'🌙', text:'<strong>You\'re significantly under your target.</strong> Even 20 minutes earlier to bed each night adds up to over 2hrs a week. Start small — set an alarm for bedtime, not just waking.' });
+  if (chronic >= 3) tips.push({ emoji:'📅', text:'<strong>Chronic debt doesn\'t clear in one night.</strong> Plan a recovery week — protect your sleep for 7–10 days in a row. One lie-in won\'t fix months of under-sleeping.' });
+  tips.push({ emoji:'🌡️', text:'<strong>Keep your bedroom cool.</strong> Core body temperature needs to drop by ~1°C to initiate sleep. 16–19°C is the optimal range for most adults.' });
+  tips.push({ emoji:'☀️', text:'<strong>Get light in the morning.</strong> 10–20 minutes of natural light within an hour of waking anchors your circadian rhythm and improves sleep quality that night.' });
+
+  var tipsHtml = '';
+  for (var t=0; t<Math.min(tips.length,6); t++) {
+    tipsHtml += '<div class="tip-item"><span class="tip-emoji">'+tips[t].emoji+'</span><span class="tip-text">'+tips[t].text+'</span></div>';
+  }
+  v('tip-list').innerHTML = tipsHtml;
+}
+</script>
+</body>
+</html>
