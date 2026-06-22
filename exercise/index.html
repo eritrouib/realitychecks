@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exercise & Life Expectancy Calculator 2026 — How Much Is Your Activity Adding to Your Life?</title>
+<meta name="description" content="Find out how your exercise habits are affecting your life expectancy. Cardio, strength, daily movement and sedentary time all factored in. Free, research-backed, no sign-up.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f0f4fa;
+  --surface: #ffffff;
+  --surface2: #e4edf8;
+  --surface3: #d4e0f0;
+  --border: rgba(10,40,100,0.1);
+  --border2: rgba(10,40,100,0.2);
+  --text: #0a1428;
+  --text2: #2a4a7a;
+  --text3: #6a88b8;
+  --blue: #1a5abf;
+  --blue-bg: #e8f0fa;
+  --orange: #d4520a;
+  --orange-bg: #fdf0e8;
+  --green: #1a7a3a;
+  --green-bg: #edf7f0;
+  --red: #c0392b;
+  --red-bg: #fdf0ee;
+  --amber: #b7600a;
+  --amber-bg: #fef5e7;
+  --accent: #1a5abf;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+header {
+  background: linear-gradient(135deg, #0a1428 0%, #1a5abf 100%);
+  color: #e8f0fa;
+  padding: 3rem 2rem 2.5rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+header::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background: radial-gradient(ellipse at 80% 50%, rgba(212,82,10,0.15) 0%, transparent 60%);
+  pointer-events: none;
+}
+header h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  line-height: 1.15; margin-bottom: .75rem; position: relative;
+}
+header h1 em { font-style: italic; color: #f0a870; }
+header p { color: rgba(255,255,255,0.55); font-size: 15px; max-width: 520px; margin: 0 auto; position: relative; }
+
+.caveat-bar {
+  background: var(--amber-bg);
+  border-bottom: 1px solid rgba(183,96,10,0.2);
+  padding: .75rem 2rem; text-align: center;
+  font-size: 13px; color: var(--amber);
+}
+
+.container { max-width: 860px; margin: 2rem auto; padding: 0 1.25rem 4rem; }
+
+.section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.5rem; margin-bottom: 1rem;
+}
+
+.section-title {
+  font-size: 11px; font-weight: 500;
+  letter-spacing: .09em; text-transform: uppercase;
+  color: var(--text3); margin-bottom: 1.25rem;
+}
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+@media(max-width:580px) { .two-col { grid-template-columns: 1fr; } }
+
+.field { margin-bottom: 1rem; }
+.field:last-child { margin-bottom: 0; }
+.field label { display: block; font-size: 13px; color: var(--text2); margin-bottom: .4rem; font-weight: 500; }
+.field-sub { font-size: 11px; color: var(--text3); margin-top: .25rem; line-height: 1.4; }
+
+select, input[type=number] {
+  width: 100%; background: var(--surface2);
+  border: 1px solid var(--border2); border-radius: 8px;
+  padding: 9px 12px; font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text); outline: none;
+}
+select:focus, input[type=number]:focus { border-color: var(--accent); }
+
+input[type=range] {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 5px;
+  background: var(--surface3); border-radius: 3px;
+  outline: none; cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--orange); border: 3px solid white;
+  box-shadow: 0 0 0 1.5px var(--border2); cursor: pointer;
+}
+input[type=range]::-moz-range-thumb {
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--orange); border: 3px solid white; cursor: pointer;
+}
+.range-row { display: flex; align-items: center; gap: 10px; margin-top: .4rem; }
+.range-row input[type=range] { flex: 1; }
+.range-val { font-size: 14px; font-weight: 500; min-width: 130px; text-align: right; color: var(--text); }
+
+.calc-btn {
+  display: block; width: 100%;
+  background: var(--orange); color: white;
+  border: none; border-radius: 12px;
+  padding: 1.1rem 2rem; font-size: 16px;
+  font-family: 'DM Sans', sans-serif; font-weight: 500;
+  cursor: pointer; margin: 1.5rem 0; transition: opacity .15s;
+}
+.calc-btn:hover { opacity: .85; }
+
+#results { display: none; }
+
+/* Hero result */
+.result-hero {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 1rem; margin-bottom: 1rem;
+}
+@media(max-width:500px) { .result-hero { grid-template-columns: 1fr; } }
+
+.hero-card {
+  border-radius: 14px; padding: 1.75rem;
+  text-align: center; border: 1px solid transparent;
+}
+.hc-label { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; opacity: .6; margin-bottom: .4rem; }
+.hc-number { font-family: 'DM Serif Display', serif; font-size: 4rem; line-height: 1; margin-bottom: .2rem; }
+.hc-sub { font-size: 13px; opacity: .6; }
+
+.stats-grid {
+  display: grid; grid-template-columns: repeat(4,1fr);
+  gap: .75rem; margin-bottom: 1rem;
+}
+@media(max-width:560px) { .stats-grid { grid-template-columns: 1fr 1fr; } }
+
+.stat {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: .9rem 1rem; text-align: center;
+}
+.s-label { font-size: 11px; color: var(--text3); margin-bottom: .25rem; }
+.s-val { font-size: 1.2rem; font-weight: 500; line-height: 1.2; }
+.s-sub { font-size: 11px; color: var(--text3); margin-top: .2rem; }
+
+.verdict {
+  border-radius: 10px; padding: 1rem 1.25rem;
+  font-size: 14px; line-height: 1.65;
+  margin-bottom: 1rem; border: 1px solid transparent;
+}
+
+.chart-section {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 1.5rem; margin-bottom: 1rem;
+}
+.chart-title { font-size: 13px; font-weight: 500; color: var(--text2); margin-bottom: 1rem; }
+
+/* Activity breakdown */
+.activity-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: .65rem .85rem; border-radius: 9px;
+  margin-bottom: .4rem; background: var(--surface2);
+  border: 1px solid var(--border); font-size: 13px;
+}
+.ar-emoji { font-size: 18px; flex-shrink: 0; }
+.ar-body { flex: 1; }
+.ar-top { display: flex; justify-content: space-between; align-items: baseline; }
+.ar-name { font-weight: 500; }
+.ar-val { font-weight: 500; }
+.ar-sub { font-size: 11px; color: var(--text3); margin-top: 1px; }
+.ar-bar-wrap { height: 3px; background: var(--surface3); border-radius: 2px; margin-top: 4px; overflow: hidden; }
+.ar-bar-fill { height: 100%; border-radius: 2px; }
+
+/* Impact grid */
+.impact-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: .65rem; margin-bottom: 1rem;
+}
+@media(max-width:500px) { .impact-grid { grid-template-columns: 1fr; } }
+
+.impact-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 1.1rem 1.2rem;
+}
+.ic-emoji { font-size: 22px; margin-bottom: .35rem; display: block; }
+.ic-title { font-size: 12px; color: var(--text2); margin-bottom: .15rem; }
+.ic-val { font-size: 1.1rem; font-weight: 500; line-height: 1.2; }
+.ic-sub { font-size: 11px; color: var(--text3); margin-top: .2rem; line-height: 1.4; }
+
+/* Tips */
+.tip-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: .7rem .9rem; border-radius: 9px;
+  margin-bottom: .4rem; background: var(--surface2);
+  border: 1px solid var(--border); font-size: 13px; line-height: 1.5;
+}
+.tip-emoji { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+.tip-text { color: var(--text2); }
+.tip-text strong { color: var(--text); }
+
+.note-box {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 1rem 1.2rem;
+  font-size: 13px; color: var(--text2); line-height: 1.65;
+}
+
+footer {
+  background: #0a1428; color: #3a5a88;
+  text-align: center; padding: 1.5rem 2rem;
+  font-size: 12.5px; line-height: 1.7;
+}
+footer a { color: #5a7ab8; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>How much is your exercise <em>adding</em> to your life?</h1>
+  <p>Enter your weekly activity — cardio, strength, daily movement and sitting time — and see exactly how many years you're gaining or losing.</p>
+</header>
+
+<div class="caveat-bar">
+  ⚠️ Informational tool only. Not medical advice. Consult a doctor before starting a new exercise programme, especially if you have existing health conditions.
+</div>
+
+<div class="container">
+
+  <!-- ABOUT YOU -->
+  <div class="section">
+    <p class="section-title">About you</p>
+    <div class="two-col">
+      <div class="field">
+        <label for="age">Age</label>
+        <input type="number" id="age" min="18" max="90" value="35">
+        <p class="field-sub">Exercise benefits on longevity vary with age</p>
+      </div>
+      <div class="field">
+        <label for="sex">Biological sex</label>
+        <select id="sex">
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="health">General health status</label>
+        <select id="health">
+          <option value="excellent">Excellent — no conditions</option>
+          <option value="good" selected>Good — minor issues</option>
+          <option value="moderate">Moderate — managed conditions</option>
+          <option value="poor">Poor — significant health issues</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="years-active">How long have you been active?</label>
+        <select id="years-active">
+          <option value="0">Just starting out</option>
+          <option value="1">Less than a year</option>
+          <option value="3" selected>1–5 years</option>
+          <option value="10">5–10 years</option>
+          <option value="20">10+ years</option>
+        </select>
+        <p class="field-sub">Lifelong activity has compounding benefits beyond short-term exercise</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARDIO -->
+  <div class="section">
+    <p class="section-title">Cardiovascular exercise</p>
+    <div class="field">
+      <label>Moderate cardio per week (brisk walk, cycling, swimming) — <span id="cardio-mod-out" class="range-val">90 mins</span></label>
+      <div class="range-row">
+        <input type="range" id="cardio-mod" min="0" max="600" value="90" step="15">
+      </div>
+      <p class="field-sub">WHO recommends 150–300 mins/week of moderate activity. 1 hour brisk walking = ~60 mins moderate</p>
+    </div>
+    <div class="field">
+      <label>Vigorous cardio per week (running, HIIT, fast cycling) — <span id="cardio-vig-out" class="range-val">0 mins</span></label>
+      <div class="range-row">
+        <input type="range" id="cardio-vig" min="0" max="300" value="0" step="15">
+      </div>
+      <p class="field-sub">WHO recommends 75–150 mins/week vigorous. 1 min vigorous ≈ 2 mins moderate</p>
+    </div>
+  </div>
+
+  <!-- STRENGTH -->
+  <div class="section">
+    <p class="section-title">Strength & resistance training</p>
+    <div class="field">
+      <label>Strength sessions per week — <span id="strength-out" class="range-val">0 sessions</span></label>
+      <div class="range-row">
+        <input type="range" id="strength" min="0" max="7" value="0" step="1">
+      </div>
+      <p class="field-sub">WHO recommends 2+ muscle-strengthening sessions/week. Includes weights, resistance bands, bodyweight</p>
+    </div>
+    <div class="field">
+      <label>Average session length — <span id="strength-dur-out" class="range-val">45 mins</span></label>
+      <div class="range-row">
+        <input type="range" id="strength-dur" min="15" max="120" value="45" step="15">
+      </div>
+    </div>
+  </div>
+
+  <!-- DAILY MOVEMENT -->
+  <div class="section">
+    <p class="section-title">Daily movement & sedentary time</p>
+    <div class="field">
+      <label>Daily steps (approx) — <span id="steps-out" class="range-val">5,000 steps</span></label>
+      <div class="range-row">
+        <input type="range" id="steps" min="0" max="20000" value="5000" step="500">
+      </div>
+      <p class="field-sub">10,000 steps/day is associated with significantly reduced mortality risk (Lancet 2022)</p>
+    </div>
+    <div class="field">
+      <label>Daily sitting time (hours) — <span id="sitting-out" class="range-val">8 hours</span></label>
+      <div class="range-row">
+        <input type="range" id="sitting" min="2" max="16" value="8" step="1">
+      </div>
+      <p class="field-sub">Prolonged sitting is independently associated with mortality even in those who exercise (BMJ 2011)</p>
+    </div>
+    <div class="field">
+      <label>Do you break up sitting regularly? — <span id="breaks-out" class="range-val">Sometimes</span></label>
+      <div class="range-row">
+        <input type="range" id="breaks" min="0" max="4" value="2" step="1">
+      </div>
+      <p class="field-sub">Standing up every 30–60 mins significantly reduces metabolic harm of sitting</p>
+    </div>
+  </div>
+
+  <!-- FLEXIBILITY & BALANCE -->
+  <div class="section">
+    <p class="section-title">Flexibility, balance & recovery</p>
+    <div class="two-col">
+      <div class="field">
+        <label for="flexibility">Flexibility & stretching</label>
+        <select id="flexibility">
+          <option value="0">None</option>
+          <option value="1">Occasional stretching</option>
+          <option value="2" selected>Regular stretching / yoga</option>
+          <option value="3">Daily yoga / Pilates / mobility work</option>
+        </select>
+        <p class="field-sub">Flexibility reduces injury risk and supports healthy ageing</p>
+      </div>
+      <div class="field">
+        <label for="recovery">Sleep & recovery quality</label>
+        <select id="recovery">
+          <option value="0">Poor — often overtrained, sleep-deprived</option>
+          <option value="1">Fair</option>
+          <option value="2" selected>Good</option>
+          <option value="3">Excellent — prioritise recovery</option>
+        </select>
+        <p class="field-sub">Exercise benefits are only realised during recovery. Poor recovery negates gains.</p>
+      </div>
+    </div>
+  </div>
+
+  <button class="calc-btn" onclick="calculate()">Calculate my exercise impact 🏃</button>
+
+  <div id="results">
+
+    <div class="result-hero">
+      <div class="hero-card" id="hero-years" style="background:var(--orange-bg);border-color:rgba(212,82,10,0.2)">
+        <p class="hc-label">Years gained / lost</p>
+        <p class="hc-number" id="years-val">—</p>
+        <p class="hc-sub">vs. a sedentary person</p>
+      </div>
+      <div class="hero-card" style="background:var(--blue-bg);border-color:rgba(26,90,191,0.2)">
+        <p class="hc-label">Weekly activity score</p>
+        <p class="hc-number" id="activity-score" style="color:var(--blue)">—</p>
+        <p class="hc-sub">out of 100</p>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat">
+        <p class="s-label">WHO guideline met</p>
+        <p class="s-val" id="s-who">—</p>
+        <p class="s-sub">cardio target</p>
+      </div>
+      <div class="stat">
+        <p class="s-label">MET mins/week</p>
+        <p class="s-val" id="s-met">—</p>
+        <p class="s-sub">metabolic equivalent</p>
+      </div>
+      <div class="stat">
+        <p class="s-label">Sitting risk</p>
+        <p class="s-val" id="s-sitting">—</p>
+        <p class="s-sub">sedentary impact</p>
+      </div>
+      <div class="stat">
+        <p class="s-label">Annual active time</p>
+        <p class="s-val" id="s-annual">—</p>
+        <p class="s-sub">hours per year</p>
+      </div>
+    </div>
+
+    <div class="verdict" id="verdict"></div>
+
+    <!-- Chart — years gained vs activity level -->
+    <div class="chart-section">
+      <p class="chart-title">Life expectancy gain by weekly activity level — where do you sit?</p>
+      <div style="position:relative;width:100%;height:260px">
+        <canvas id="activityChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Cumulative benefit chart -->
+    <div class="chart-section">
+      <p class="chart-title">Cumulative years gained over time at your activity level</p>
+      <div style="position:relative;width:100%;height:240px">
+        <canvas id="cumulChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Activity breakdown -->
+    <div class="section">
+      <p class="section-title">Activity breakdown</p>
+      <div id="activity-breakdown"></div>
+    </div>
+
+    <!-- Health impacts -->
+    <div class="section">
+      <p class="section-title">What your activity level is doing right now</p>
+      <div class="impact-grid" id="impact-grid"></div>
+    </div>
+
+    <!-- Tips -->
+    <div class="section">
+      <p class="section-title">Personalised recommendations</p>
+      <div id="tips-list"></div>
+    </div>
+
+    <div class="note-box">
+      <strong style="color:var(--text)">Sources:</strong> WHO Global recommendations on physical activity for health (2020). Arem et al. JAMA Internal Medicine (2015) — leisure time physical activity and mortality. Lee et al. Lancet (2022) — daily steps and mortality. Biswas et al. Annals of Internal Medicine (2015) — sedentary time and mortality. Stamatakis et al. BMJ (2019) — strength training and mortality. Life expectancy estimates derived from population-level hazard ratios — individual results will vary. This tool is informational only and not a substitute for medical advice.
+    </div>
+  </div>
+</div>
+
+<footer>
+  Part of <a href="https://realitychecks.app">realitychecks.app</a> · Free tools that make you think · Not medical advice
+</footer>
+
+<script>
+function v(id) { return document.getElementById(id); }
+
+var BREAKS_LABELS = ['Never — sit for hours','Rarely','Sometimes','Often (every hour)','Always — stand/move every 30 mins'];
+var STEPS_VALS = [0,500,1000,1500,2000,2500,3000,3500,4000,4500,5000,5500,6000,6500,7000,7500,8000,8500,9000,9500,10000,10500,11000,11500,12000,12500,13000,13500,14000,14500,15000,15500,16000,16500,17000,17500,18000,18500,19000,19500,20000];
+
+v('cardio-mod').addEventListener('input', function(){ v('cardio-mod-out').textContent = this.value + ' mins'; });
+v('cardio-vig').addEventListener('input', function(){ v('cardio-vig-out').textContent = this.value + ' mins'; });
+v('strength').addEventListener('input', function(){ v('strength-out').textContent = this.value + ' session' + (this.value==1?'':'s'); });
+v('strength-dur').addEventListener('input', function(){ v('strength-dur-out').textContent = this.value + ' mins'; });
+v('steps').addEventListener('input', function(){ v('steps-out').textContent = parseInt(this.value).toLocaleString() + ' steps'; });
+v('sitting').addEventListener('input', function(){ v('sitting-out').textContent = this.value + ' hours'; });
+v('breaks').addEventListener('input', function(){ v('breaks-out').textContent = BREAKS_LABELS[this.value]; });
+
+var chartA = null, chartB = null;
+
+function calculate() {
+  var age        = parseInt(v('age').value) || 35;
+  var sex        = v('sex').value;
+  var health     = v('health').value;
+  var yearsActive= parseInt(v('years-active').value);
+  var cardioMod  = parseInt(v('cardio-mod').value);
+  var cardioVig  = parseInt(v('cardio-vig').value);
+  var strength   = parseInt(v('strength').value);
+  var strengthDur= parseInt(v('strength-dur').value);
+  var steps      = parseInt(v('steps').value);
+  var sitting    = parseInt(v('sitting').value);
+  var breaks     = parseInt(v('breaks').value);
+  var flexibility= parseInt(v('flexibility').value);
+  var recovery   = parseInt(v('recovery').value);
+
+  // MET minutes (moderate=3.5 METs, vigorous=7 METs, strength=5 METs)
+  var metMins = cardioMod * 3.5 + cardioVig * 7 + strength * strengthDur * 5;
+  // WHO equivalent minutes (moderate equivalent)
+  var whoEq = cardioMod + cardioVig * 2;
+  var whoMet = whoEq >= 300 ? 'Exceeds guidelines' : whoEq >= 150 ? 'Meets guidelines' : whoEq >= 75 ? 'Below guidelines' : 'Well below guidelines';
+  var whoColor = whoEq >= 300 ? 'var(--green)' : whoEq >= 150 ? '#5a9a2a' : whoEq >= 75 ? 'var(--amber)' : 'var(--red)';
+  var strengthMet = strength >= 2 ? 'Met (2+/wk)' : strength === 1 ? 'Partial' : 'Not met';
+
+  // Steps benefit
+  var stepsBenefit = 0;
+  if (steps >= 10000) stepsBenefit = 1.5;
+  else if (steps >= 8000) stepsBenefit = 1.0;
+  else if (steps >= 6000) stepsBenefit = 0.5;
+  else if (steps >= 4000) stepsBenefit = 0;
+  else stepsBenefit = -0.5;
+
+  // Cardio benefit (based on Arem et al. JAMA 2015 hazard ratios)
+  var cardioBenefit = 0;
+  if (whoEq === 0) cardioBenefit = 0;
+  else if (whoEq < 75) cardioBenefit = 0.8;
+  else if (whoEq < 150) cardioBenefit = 1.8;
+  else if (whoEq < 300) cardioBenefit = 3.0;
+  else if (whoEq < 600) cardioBenefit = 3.5;
+  else cardioBenefit = 3.4; // plateau above very high
+
+  // Strength benefit
+  var strengthBenefit = strength >= 2 ? 1.5 : strength === 1 ? 0.8 : 0;
+
+  // Sitting penalty
+  var sittingPenalty = 0;
+  if (sitting >= 11) sittingPenalty = 2.0;
+  else if (sitting >= 8) sittingPenalty = 1.0;
+  else if (sitting >= 6) sittingPenalty = 0.3;
+  // Breaks reduce penalty
+  sittingPenalty *= (1 - breaks * 0.15);
+
+  // Flexibility bonus
+  var flexBonus = [0, 0.2, 0.5, 0.8][flexibility];
+
+  // Recovery bonus
+  var recoveryBonus = [0, 0.2, 0.5, 1.0][recovery];
+
+  // Longevity modifier
+  var longevityBonus = Math.min(20, yearsActive) * 0.05;
+
+  // Total years
+  var totalYears = cardioBenefit + strengthBenefit + stepsBenefit + flexBonus + recoveryBonus + longevityBonus - sittingPenalty;
+  totalYears = Math.round(totalYears * 10) / 10;
+
+  // Activity score /100
+  var actScore = 0;
+  actScore += Math.min(40, whoEq / 300 * 40);
+  actScore += Math.min(20, strength / 4 * 20);
+  actScore += Math.min(15, steps / 10000 * 15);
+  actScore += Math.max(0, (10 - sitting) / 10 * 10);
+  actScore += flexibility / 3 * 8;
+  actScore += recovery / 3 * 7;
+  actScore = Math.round(Math.min(100, actScore));
+
+  // Annual hours
+  var annualHours = Math.round((cardioMod + cardioVig + strength * strengthDur) / 60 * 52);
+
+  v('results').style.display = 'block';
+  v('results').scrollIntoView({ behavior:'smooth', block:'start' });
+
+  // Hero
+  var yearsEl = v('years-val');
+  yearsEl.textContent = (totalYears >= 0 ? '+' : '') + totalYears + ' yrs';
+  yearsEl.style.color = totalYears >= 3 ? 'var(--green)' : totalYears >= 1 ? 'var(--orange)' : totalYears >= 0 ? 'var(--amber)' : 'var(--red)';
+  v('activity-score').textContent = actScore;
+
+  v('s-who').textContent = whoMet.split(' ')[0];
+  v('s-who').style.color = whoColor;
+  v('s-met').textContent = Math.round(metMins).toLocaleString();
+  var sitRisk = sitting >= 11 ? 'High' : sitting >= 8 ? 'Moderate' : sitting >= 6 ? 'Low' : 'Minimal';
+  v('s-sitting').textContent = sitRisk;
+  v('s-sitting').style.color = sitting >= 11 ? 'var(--red)' : sitting >= 8 ? 'var(--amber)' : 'var(--green)';
+  v('s-annual').textContent = annualHours + ' hrs';
+
+  // Verdict
+  var vBg, vColor, vMsg;
+  if (totalYears >= 4) {
+    vBg='var(--green-bg)'; vColor='var(--green)';
+    vMsg = 'Outstanding. Your activity level is estimated to add ' + totalYears + ' years to your life expectancy compared to a sedentary person. You\'re well above WHO guidelines and the compound benefit over decades is significant. Make sure recovery and flexibility keep pace with your output.';
+  } else if (totalYears >= 2) {
+    vBg='var(--blue-bg)'; vColor='var(--blue)';
+    vMsg = 'Good level of activity — your habits are adding around ' + totalYears + ' years to your life expectancy. ' + (whoEq < 150 ? 'Increasing cardio to 150+ mins/week would push this higher.' : strength < 2 ? 'Adding strength training twice a week would add another year or more.' : 'Keep building consistency.');
+  } else if (totalYears >= 0) {
+    vBg='var(--amber-bg)'; vColor='var(--amber)';
+    vMsg = 'You\'re doing something, which is better than nothing — but there\'s a lot of room to grow. ' + (whoEq < 75 ? 'Even getting to 75 mins of moderate exercise a week adds nearly 2 years of life expectancy.' : '') + (sitting >= 8 ? ' Your sitting time is offsetting some of your exercise benefit — try to break it up.' : '');
+  } else {
+    vBg='var(--red-bg)'; vColor='var(--red)';
+    vMsg = 'Your current activity level combined with high sitting time is estimated to be costing you years of life expectancy. The good news: even modest increases make a dramatic difference. Just 75 mins of brisk walking per week reduces mortality risk by 31% (JAMA 2015).';
+  }
+  var ve = v('verdict');
+  ve.style.background = vBg; ve.style.color = vColor; ve.style.borderColor = vColor + '44';
+  ve.textContent = vMsg;
+
+  // Bar chart — activity level comparison
+  var benchmarks = [
+    { label:'Sedentary', years:0, color:'#c0392b' },
+    { label:'Light active', years:1.8, color:'#e07820' },
+    { label:'WHO minimum', years:2.5, color:'#d4a017' },
+    { label:'WHO optimal', years:3.4, color:'#5a9a2a' },
+    { label:'You', years:totalYears, color: totalYears >= 3 ? '#1a7a3a' : totalYears >= 1 ? '#1a5abf' : totalYears >= 0 ? '#b7600a' : '#c0392b' },
+    { label:'Very active', years:4.2, color:'#1a7a3a' }
+  ];
+
+  if (chartA) chartA.destroy();
+  chartA = new Chart(v('activityChart'), {
+    type: 'bar',
+    data: {
+      labels: benchmarks.map(function(b){ return b.label; }),
+      datasets: [{
+        data: benchmarks.map(function(b){ return Math.max(0, b.years); }),
+        backgroundColor: benchmarks.map(function(b){ return b.color + 'cc'; }),
+        borderColor: benchmarks.map(function(b){ return b.color; }),
+        borderWidth: benchmarks.map(function(b){ return b.label === 'You' ? 2.5 : 1; }),
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:function(ctx){ return '+'+ctx.parsed.y+' years vs sedentary'; } } } },
+      scales:{
+        y:{ min:0, max:5, ticks:{ callback:function(v){ return '+'+v+'yr'; }, font:{size:11}, color:'#6a88b8' }, grid:{ color:'rgba(10,40,100,0.05)' } },
+        x:{ ticks:{ font:{size:11}, color:'#2a4a7a' }, grid:{display:false} }
+      }
+    }
+  });
+
+  // Cumulative chart
+  var cumLabels=[], cumData=[];
+  for (var yr=0; yr<=40; yr++) {
+    cumLabels.push('Age '+(age+yr));
+    cumData.push(Math.round(totalYears * (yr/40) * 10)/10);
+  }
+  if (chartB) chartB.destroy();
+  chartB = new Chart(v('cumulChart'), {
+    type: 'line',
+    data: {
+      labels: cumLabels,
+      datasets: [{
+        data: cumData,
+        borderColor: '#d4520a',
+        backgroundColor: 'rgba(212,82,10,0.08)',
+        borderWidth: 2, pointRadius: 0, fill: true, tension: 0.4
+      }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:function(ctx){ return '+'+ctx.parsed.y+' years gained'; } } } },
+      scales:{
+        y:{ ticks:{ callback:function(v){ return '+'+v+'yr'; }, font:{size:11}, color:'#6a88b8' }, grid:{ color:'rgba(10,40,100,0.05)' } },
+        x:{ ticks:{ font:{size:10}, color:'#6a88b8', maxTicksLimit:9 }, grid:{display:false} }
+      }
+    }
+  });
+
+  // Activity breakdown
+  var activities = [
+    { emoji:'🚴', name:'Moderate cardio', val:cardioMod+' mins/wk', benefit:'+'+Math.round(cardioBenefit*10)/10+' yrs', pct:Math.min(100,cardioMod/300*100), color:'#1a5abf', note:'WHO target: 150–300 mins/week' },
+    { emoji:'🏃', name:'Vigorous cardio', val:cardioVig+' mins/wk', benefit: cardioVig > 0 ? '(included above)' : 'None', pct:Math.min(100,cardioVig/150*100), color:'#d4520a', note:'WHO target: 75–150 mins/week vigorous' },
+    { emoji:'🏋️', name:'Strength training', val:strength+'×/wk × '+strengthDur+'min', benefit:'+'+strengthBenefit+' yrs', pct:Math.min(100,strength/4*100), color:'#7c5cbf', note:'WHO target: 2+ sessions/week' },
+    { emoji:'👟', name:'Daily steps', val:parseInt(steps).toLocaleString()+' steps', benefit:(stepsBenefit>=0?'+':'')+stepsBenefit+' yrs', pct:Math.min(100,steps/10000*100), color:'#1a7a3a', note:'Target: 7,000–10,000 steps/day' },
+    { emoji:'🪑', name:'Sitting time', val:sitting+'hrs/day', benefit:'-'+Math.round(sittingPenalty*10)/10+' yrs', pct:Math.min(100,sitting/12*100), color:'#c0392b', note: sitting >= 8 ? 'High — try to break it up every hour' : 'Manageable' }
+  ];
+
+  var abHtml = '';
+  for (var i=0; i<activities.length; i++) {
+    var a = activities[i];
+    var isNeg = a.benefit.charAt(0) === '-';
+    abHtml += '<div class="activity-row">' +
+      '<span class="ar-emoji">'+a.emoji+'</span>' +
+      '<div class="ar-body">' +
+        '<div class="ar-top"><span class="ar-name">'+a.name+'</span>' +
+        '<span class="ar-val" style="color:'+(isNeg?'var(--red)':'var(--green)')+'">'+a.benefit+'</span></div>' +
+        '<div class="ar-sub">'+a.val+' · '+a.note+'</div>' +
+        '<div class="ar-bar-wrap"><div class="ar-bar-fill" style="width:'+a.pct+'%;background:'+a.color+'"></div></div>' +
+      '</div>' +
+    '</div>';
+  }
+  v('activity-breakdown').innerHTML = abHtml;
+
+  // Health impacts
+  var cardioFit = whoEq >= 150 ? 'Good' : whoEq >= 75 ? 'Fair' : 'Low';
+  var impacts = [
+    { emoji:'❤️', title:'Cardiovascular fitness', val:cardioFit, sub:'Regular cardio reduces heart disease risk by up to 35%', color: whoEq>=150?'var(--green)':whoEq>=75?'var(--amber)':'var(--red)' },
+    { emoji:'🦴', title:'Bone & muscle health', val: strength>=2?'Well maintained':strength===1?'Partial':'At risk', sub:'Strength training is the primary defence against sarcopenia and osteoporosis after 40', color:strength>=2?'var(--green)':strength===1?'var(--amber)':'var(--red)' },
+    { emoji:'🧠', title:'Mental health & cognition', val: whoEq>=150?'Strong benefit':whoEq>=75?'Some benefit':'Minimal', sub:'Exercise reduces depression risk by 26% and dementia risk by 30% (meta-analysis)', color:whoEq>=150?'var(--green)':whoEq>=75?'var(--amber)':'var(--red)' },
+    { emoji:'⚖️', title:'Metabolic health', val: metMins>=500?'Excellent':metMins>=250?'Good':metMins>=100?'Fair':'Poor', sub:'Regular activity improves insulin sensitivity and reduces type 2 diabetes risk by up to 58%', color:metMins>=500?'var(--green)':metMins>=250?'#5a9a2a':metMins>=100?'var(--amber)':'var(--red)' },
+    { emoji:'😴', title:'Sleep quality', val: whoEq>=150&&recovery>=2?'Improved':'Neutral to positive', sub:'Moderate exercise consistently improves sleep quality and reduces insomnia', color:whoEq>=150?'var(--green)':'var(--amber)' },
+    { emoji:'🛡️', title:'Immune function', val: whoEq>=150&&whoEq<600?'Enhanced':whoEq>=600?'Monitor — may overtrain':'Below optimal', sub:'Moderate exercise boosts immune surveillance; extreme overtraining can suppress it', color:whoEq>=150&&whoEq<600?'var(--green)':whoEq>=600?'var(--amber)':'var(--red)' }
+  ];
+
+  var igHtml = '';
+  for (var j=0; j<impacts.length; j++) {
+    var imp = impacts[j];
+    igHtml += '<div class="impact-card"><span class="ic-emoji">'+imp.emoji+'</span><div class="ic-title">'+imp.title+'</div><div class="ic-val" style="color:'+imp.color+'">'+imp.val+'</div><div class="ic-sub">'+imp.sub+'</div></div>';
+  }
+  v('impact-grid').innerHTML = igHtml;
+
+  // Tips
+  var tips = [];
+  if (whoEq < 150) tips.push({ emoji:'🚶', text:'<strong>Get to 150 mins of moderate activity per week.</strong> This is the single most impactful threshold — the mortality risk reduction between 0 and 150 mins is larger than between 150 and 300 mins. Even brisk walking counts.' });
+  if (strength < 2) tips.push({ emoji:'🏋️', text:'<strong>Add strength training twice a week.</strong> Even 2 sessions of 30 mins adds ~1.5 years of life expectancy. Bodyweight exercises at home count — squats, push-ups, lunges.' });
+  if (steps < 7000) tips.push({ emoji:'👟', text:'<strong>Aim for 7,000–10,000 steps a day.</strong> The Lancet 2022 study found 7,000 steps is the threshold where mortality risk reduction plateaus for older adults. Take the stairs, walk to lunch.' });
+  if (sitting >= 8) tips.push({ emoji:'🪑', text:'<strong>Break up your sitting time every 30–60 minutes.</strong> Set an alarm. Stand up, walk to the kitchen, do 10 squats. This alone reduces the metabolic harm of prolonged sitting significantly.' });
+  if (cardioVig === 0) tips.push({ emoji:'🏃', text:'<strong>Add one vigorous session per week.</strong> 1 min vigorous = 2 mins moderate in WHO terms. A 20-min run gives you 40 mins of equivalent moderate activity. HIIT is time-efficient and highly effective.' });
+  if (flexibility === 0) tips.push({ emoji:'🧘', text:'<strong>Add 10 minutes of stretching after workouts.</strong> Flexibility reduces injury risk which is the main reason people fall off exercise routines. Even 10 mins of yoga 3×/week makes a measurable difference.' });
+  if (recovery <= 1) tips.push({ emoji:'😴', text:'<strong>Prioritise recovery as much as training.</strong> Exercise creates the stimulus — sleep and rest create the adaptation. Without recovery, you\'re accumulating fatigue without the fitness gains.' });
+  tips.push({ emoji:'📅', text:'<strong>Consistency beats intensity.</strong> Research consistently shows that steady, moderate exercise over years outperforms intense periods followed by inactivity. Find something you enjoy enough to do forever.' });
+
+  var tHtml = '';
+  for (var t=0; t<Math.min(6,tips.length); t++) {
+    tHtml += '<div class="tip-item"><span class="tip-emoji">'+tips[t].emoji+'</span><span class="tip-text">'+tips[t].text+'</span></div>';
+  }
+  v('tips-list').innerHTML = tHtml;
+}
+</script>
+</body>
+</html>
