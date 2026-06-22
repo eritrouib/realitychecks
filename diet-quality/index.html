@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diet Quality Calculator 2026 — What Is Your Diet Really Doing to You?</title>
+<meta name="description" content="Find out what your diet is really doing to your health and life expectancy. Scored against Mediterranean diet and NHS/WHO guidelines. Free, research-backed, no sign-up.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f4f9f0;
+  --surface: #ffffff;
+  --surface2: #eaf3e4;
+  --surface3: #dcebd4;
+  --border: rgba(20,60,10,0.1);
+  --border2: rgba(20,60,10,0.2);
+  --text: #141e10;
+  --text2: #3a5a30;
+  --text3: #7a9a70;
+  --green: #1a7a2a;
+  --green-bg: #edf7ed;
+  --red: #c0392b;
+  --red-bg: #fdf0ee;
+  --amber: #b7600a;
+  --amber-bg: #fef5e7;
+  --accent: #1a7a2a;
+  --med-color: #c0782a;
+  --med-bg: #fdf3e8;
+  --nhs-color: #1a4a7a;
+  --nhs-bg: #e8f0fa;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+header {
+  background: linear-gradient(135deg, #141e10 0%, #1a7a2a 100%);
+  color: #f0f9ec;
+  padding: 3rem 2rem 2.5rem;
+  text-align: center;
+}
+header h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  line-height: 1.15; margin-bottom: .75rem;
+}
+header h1 em { font-style: italic; color: #a8d4a8; }
+header p { color: rgba(255,255,255,0.55); font-size: 15px; max-width: 520px; margin: 0 auto; }
+
+.caveat-bar {
+  background: var(--amber-bg);
+  border-bottom: 1px solid rgba(183,96,10,0.2);
+  padding: .75rem 2rem; text-align: center;
+  font-size: 13px; color: var(--amber);
+}
+
+.container { max-width: 860px; margin: 2rem auto; padding: 0 1.25rem 4rem; }
+
+.section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.5rem; margin-bottom: 1rem;
+}
+
+.section-title {
+  font-size: 11px; font-weight: 500;
+  letter-spacing: .09em; text-transform: uppercase;
+  color: var(--text3); margin-bottom: 1.25rem;
+}
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+@media(max-width:580px) { .two-col { grid-template-columns: 1fr; } }
+
+.field { margin-bottom: 1rem; }
+.field:last-child { margin-bottom: 0; }
+.field label { display: block; font-size: 13px; color: var(--text2); margin-bottom: .4rem; font-weight: 500; }
+.field-sub { font-size: 11px; color: var(--text3); margin-top: .25rem; line-height: 1.4; }
+
+select {
+  width: 100%; background: var(--surface2);
+  border: 1px solid var(--border2); border-radius: 8px;
+  padding: 9px 12px; font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text); outline: none;
+}
+select:focus { border-color: var(--accent); }
+
+input[type=range] {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 5px;
+  background: var(--surface3); border-radius: 3px;
+  outline: none; cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--accent); border: 3px solid white;
+  box-shadow: 0 0 0 1.5px var(--border2); cursor: pointer;
+}
+input[type=range]::-moz-range-thumb {
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--accent); border: 3px solid white; cursor: pointer;
+}
+.range-row { display: flex; align-items: center; gap: 10px; margin-top: .4rem; }
+.range-row input[type=range] { flex: 1; }
+.range-val { font-size: 14px; font-weight: 500; min-width: 120px; text-align: right; color: var(--text); }
+
+.calc-btn {
+  display: block; width: 100%;
+  background: var(--accent); color: white;
+  border: none; border-radius: 12px;
+  padding: 1.1rem 2rem; font-size: 16px;
+  font-family: 'DM Sans', sans-serif; font-weight: 500;
+  cursor: pointer; margin: 1.5rem 0; transition: opacity .15s;
+}
+.calc-btn:hover { opacity: .85; }
+
+#results { display: none; }
+
+/* Score display */
+.score-grid {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: .85rem; margin-bottom: 1rem;
+}
+@media(max-width:540px) { .score-grid { grid-template-columns: 1fr; } }
+
+.score-card {
+  border-radius: 14px; padding: 1.5rem;
+  text-align: center; border: 1px solid transparent;
+}
+.score-card.overall { background: var(--green-bg); border-color: rgba(26,122,42,0.2); }
+.score-card.med { background: var(--med-bg); border-color: rgba(192,120,42,0.2); }
+.score-card.nhs { background: var(--nhs-bg); border-color: rgba(26,74,122,0.2); }
+.sc-label { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; opacity: .6; margin-bottom: .4rem; }
+.sc-number { font-family: 'DM Serif Display', serif; font-size: 3.5rem; line-height: 1; margin-bottom: .2rem; }
+.score-card.overall .sc-number { color: var(--green); }
+.score-card.med .sc-number { color: var(--med-color); }
+.score-card.nhs .sc-number { color: var(--nhs-color); }
+.sc-sub { font-size: 12px; opacity: .6; }
+
+/* Score bar */
+.score-bar-wrap {
+  background: var(--surface2); border-radius: 6px;
+  height: 10px; overflow: hidden; margin: .5rem 0 .25rem;
+}
+.score-bar-fill {
+  height: 100%; border-radius: 6px;
+  transition: width .8s cubic-bezier(.34,1.2,.64,1);
+}
+
+.stats-grid {
+  display: grid; grid-template-columns: repeat(4,1fr);
+  gap: .75rem; margin-bottom: 1rem;
+}
+@media(max-width:560px) { .stats-grid { grid-template-columns: 1fr 1fr; } }
+
+.stat {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: .9rem 1rem; text-align: center;
+}
+.s-label { font-size: 11px; color: var(--text3); margin-bottom: .25rem; }
+.s-val { font-size: 1.2rem; font-weight: 500; line-height: 1.2; }
+.s-sub { font-size: 11px; color: var(--text3); margin-top: .2rem; }
+
+.verdict {
+  border-radius: 10px; padding: 1rem 1.25rem;
+  font-size: 14px; line-height: 1.65;
+  margin-bottom: 1rem; border: 1px solid transparent;
+}
+
+.chart-section {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 1.5rem; margin-bottom: 1rem;
+}
+.chart-title { font-size: 13px; font-weight: 500; color: var(--text2); margin-bottom: 1rem; }
+
+/* Food factor rows */
+.food-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: .65rem .85rem; border-radius: 9px;
+  margin-bottom: .4rem; background: var(--surface2);
+  border: 1px solid var(--border); font-size: 13px;
+}
+.fr-emoji { font-size: 18px; flex-shrink: 0; }
+.fr-body { flex: 1; min-width: 0; }
+.fr-top { display: flex; justify-content: space-between; align-items: baseline; }
+.fr-name { font-weight: 500; }
+.fr-score { font-weight: 500; font-size: 13px; }
+.fr-sub { font-size: 11px; color: var(--text3); margin-top: 1px; }
+.fr-bar-wrap { height: 3px; background: var(--surface3); border-radius: 2px; margin-top: 4px; overflow: hidden; }
+.fr-bar-fill { height: 100%; border-radius: 2px; }
+
+/* Health impact cards */
+.impact-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: .65rem; margin-bottom: 1rem;
+}
+@media(max-width:500px) { .impact-grid { grid-template-columns: 1fr; } }
+
+.impact-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 1.1rem 1.2rem;
+}
+.ic-emoji { font-size: 22px; margin-bottom: .35rem; display: block; }
+.ic-title { font-size: 12px; color: var(--text2); margin-bottom: .15rem; }
+.ic-val { font-size: 1.1rem; font-weight: 500; line-height: 1.2; }
+.ic-sub { font-size: 11px; color: var(--text3); margin-top: .2rem; line-height: 1.4; }
+
+/* Tips */
+.tip-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: .7rem .9rem; border-radius: 9px;
+  margin-bottom: .4rem; background: var(--surface2);
+  border: 1px solid var(--border); font-size: 13px; line-height: 1.5;
+}
+.tip-emoji { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+.tip-text { color: var(--text2); }
+.tip-text strong { color: var(--text); }
+
+.note-box {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 1rem 1.2rem;
+  font-size: 13px; color: var(--text2); line-height: 1.65;
+}
+
+footer {
+  background: #141e10; color: #4a6a40;
+  text-align: center; padding: 1.5rem 2rem;
+  font-size: 12.5px; line-height: 1.7;
+}
+footer a { color: #6a9a60; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>What is your diet <em>really</em> doing to you?</h1>
+  <p>Enter your eating habits and see your diet quality score, health impact and life expectancy effect — measured against the Mediterranean diet and NHS/WHO guidelines.</p>
+</header>
+
+<div class="caveat-bar">
+  ⚠️ Informational tool only. Not medical or nutritional advice. Based on population-level research — individual results vary. Always consult a qualified professional.
+</div>
+
+<div class="container">
+
+  <!-- FRUIT & VEG -->
+  <div class="section">
+    <p class="section-title">Fruit & vegetables</p>
+    <div class="field">
+      <label>Portions of fruit & veg per day — <span id="fv-out" class="range-val">3 portions</span></label>
+      <div class="range-row">
+        <input type="range" id="fv" min="0" max="10" value="3" step="1">
+      </div>
+      <p class="field-sub">NHS recommends 5 a day. Mediterranean diet averages 7–8. 1 portion = 80g fresh, 30g dried, 150ml juice (max 1 juice/day)</p>
+    </div>
+    <div class="field">
+      <label>How varied is your fruit & veg? — <span id="fv-variety-out" class="range-val">Some variety</span></label>
+      <div class="range-row">
+        <input type="range" id="fv-variety" min="0" max="4" value="2" step="1">
+      </div>
+      <p class="field-sub">Eating a wide range of colours and types provides broader micronutrient coverage</p>
+    </div>
+  </div>
+
+  <!-- PROTEIN -->
+  <div class="section">
+    <p class="section-title">Protein sources</p>
+    <div class="field">
+      <label>Red & processed meat — <span id="meat-out" class="range-val">3–4 times/week</span></label>
+      <div class="range-row">
+        <input type="range" id="meat" min="0" max="4" value="2" step="1">
+      </div>
+      <p class="field-sub">WHO classifies processed meat as Group 1 carcinogen. NHS recommends max 70g red/processed meat per day</p>
+    </div>
+    <div class="field">
+      <label>Fish & seafood — <span id="fish-out" class="range-val">Once a week</span></label>
+      <div class="range-row">
+        <input type="range" id="fish" min="0" max="4" value="1" step="1">
+      </div>
+      <p class="field-sub">NHS recommends 2 portions/week including 1 oily fish. Mediterranean diet includes 3–4 portions.</p>
+    </div>
+    <div class="field">
+      <label>Legumes, nuts & plant protein — <span id="legumes-out" class="range-val">Rarely</span></label>
+      <div class="range-row">
+        <input type="range" id="legumes" min="0" max="4" value="1" step="1">
+      </div>
+      <p class="field-sub">Beans, lentils, chickpeas, nuts, tofu — cornerstone of Mediterranean and plant-based diets</p>
+    </div>
+  </div>
+
+  <!-- GRAINS & CARBS -->
+  <div class="section">
+    <p class="section-title">Grains & carbohydrates</p>
+    <div class="field">
+      <label>Whole grains vs refined carbs — <span id="grains-out" class="range-val">Mixed</span></label>
+      <div class="range-row">
+        <input type="range" id="grains" min="0" max="4" value="2" step="1">
+      </div>
+      <p class="field-sub">Mostly white bread/pasta/rice (0) → Mostly wholegrains, oats, brown rice (4)</p>
+    </div>
+    <div class="field">
+      <label>Added sugar intake — <span id="sugar-out" class="range-val">Moderate</span></label>
+      <div class="range-row">
+        <input type="range" id="sugar" min="0" max="4" value="2" step="1">
+      </div>
+      <p class="field-sub">None (0) → Heavy (sugary drinks, sweets, pastries daily) (4). NHS recommends max 30g free sugars/day</p>
+    </div>
+  </div>
+
+  <!-- FATS & DAIRY -->
+  <div class="section">
+    <p class="section-title">Fats & dairy</p>
+    <div class="field">
+      <label>Olive oil & healthy fats — <span id="oil-out" class="range-val">Sometimes</span></label>
+      <div class="range-row">
+        <input type="range" id="oil" min="0" max="4" value="1" step="1">
+      </div>
+      <p class="field-sub">Olive oil is the primary fat in the Mediterranean diet. Also includes avocado, nuts, oily fish</p>
+    </div>
+    <div class="field">
+      <label>Ultra-processed food (UPF) consumption — <span id="upf-out" class="range-val">Some most days</span></label>
+      <div class="range-row">
+        <input type="range" id="upf" min="0" max="4" value="2" step="1">
+      </div>
+      <p class="field-sub">Ready meals, crisps, fizzy drinks, fast food. UK average is ~57% of calories from UPF (NOVA classification)</p>
+    </div>
+    <div class="field">
+      <label>Dairy consumption — <span id="dairy-out" class="range-val">Moderate</span></label>
+      <div class="range-row">
+        <input type="range" id="dairy" min="0" max="4" value="2" step="1">
+      </div>
+      <p class="field-sub">None (0) → Heavy (cheese, milk, butter daily) (4). Moderate dairy is neutral to mildly positive</p>
+    </div>
+  </div>
+
+  <!-- HABITS -->
+  <div class="section">
+    <p class="section-title">Eating habits & patterns</p>
+    <div class="field">
+      <label>How often do you cook from scratch? — <span id="cook-out" class="range-val">A few times a week</span></label>
+      <div class="range-row">
+        <input type="range" id="cook" min="0" max="4" value="2" step="1">
+      </div>
+      <p class="field-sub">Home cooking is consistently associated with better diet quality and lower calorie intake</p>
+    </div>
+    <div class="field">
+      <label>Meal regularity — <span id="meals-out" class="range-val">Fairly regular</span></label>
+      <div class="range-row">
+        <input type="range" id="meals" min="0" max="4" value="2" step="1">
+      </div>
+      <p class="field-sub">Skipping meals, eating very late or grazing all day (0) → Regular meals at consistent times (4)</p>
+    </div>
+    <div class="field">
+      <label>Water & hydrating foods — <span id="water-out" class="range-val">Some</span></label>
+      <div class="range-row">
+        <input type="range" id="water" min="0" max="4" value="2" step="1">
+      </div>
+      <p class="field-sub">Fruit, veg, soups and water contribute significantly to daily fluid intake</p>
+    </div>
+    <div class="two-col" style="margin-top:.85rem">
+      <div class="field">
+        <label for="alcohol-diet">Alcohol consumption</label>
+        <select id="alcohol-diet">
+          <option value="0">None</option>
+          <option value="1">Light (1–2 drinks/week)</option>
+          <option value="2" selected>Moderate (3–7 drinks/week)</option>
+          <option value="3">Heavy (8–14 drinks/week)</option>
+          <option value="4">Very heavy (15+/week)</option>
+        </select>
+        <p class="field-sub">Alcohol has no safe level per The Lancet 2018</p>
+      </div>
+      <div class="field">
+        <label for="eating-speed">Eating speed & mindfulness</label>
+        <select id="eating-speed">
+          <option value="0">Very fast, distracted (desk/TV)</option>
+          <option value="1">Fairly fast</option>
+          <option value="2" selected>Normal pace</option>
+          <option value="3">Fairly mindful</option>
+          <option value="4">Slow, mindful, social meals</option>
+        </select>
+        <p class="field-sub">Slow eating is linked to better satiety signals and lower calorie intake</p>
+      </div>
+    </div>
+  </div>
+
+  <button class="calc-btn" onclick="calculate()">Score my diet →</button>
+
+  <div id="results">
+
+    <!-- Score cards -->
+    <div class="score-grid">
+      <div class="score-card overall">
+        <p class="sc-label">Overall diet score</p>
+        <p class="sc-number" id="overall-score">—</p>
+        <div class="score-bar-wrap"><div class="score-bar-fill" id="overall-bar" style="width:0%;background:var(--green)"></div></div>
+        <p class="sc-sub" id="overall-label">out of 100</p>
+      </div>
+      <div class="score-card med">
+        <p class="sc-label">vs Mediterranean diet</p>
+        <p class="sc-number" id="med-score">—</p>
+        <div class="score-bar-wrap"><div class="score-bar-fill" id="med-bar" style="width:0%;background:var(--med-color)"></div></div>
+        <p class="sc-sub">% alignment</p>
+      </div>
+      <div class="score-card nhs">
+        <p class="sc-label">vs NHS / WHO guidelines</p>
+        <p class="sc-number" id="nhs-score">—</p>
+        <div class="score-bar-wrap"><div class="score-bar-fill" id="nhs-bar" style="width:0%;background:var(--nhs-color)"></div></div>
+        <p class="sc-sub">% compliance</p>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat">
+        <p class="s-label">Life expectancy effect</p>
+        <p class="s-val" id="s-life">—</p>
+        <p class="s-sub">vs average diet</p>
+      </div>
+      <div class="stat">
+        <p class="s-label">Diet quality tier</p>
+        <p class="s-val" id="s-tier">—</p>
+        <p class="s-sub">overall classification</p>
+      </div>
+      <div class="stat">
+        <p class="s-label">Biggest strength</p>
+        <p class="s-val" id="s-strength">—</p>
+        <p class="s-sub">keep this up</p>
+      </div>
+      <div class="stat">
+        <p class="s-label">Biggest gap</p>
+        <p class="s-val" id="s-gap">—</p>
+        <p class="s-sub">biggest opportunity</p>
+      </div>
+    </div>
+
+    <div class="verdict" id="verdict"></div>
+
+    <!-- Radar chart -->
+    <div class="chart-section">
+      <p class="chart-title">Your diet vs Mediterranean diet vs NHS guidelines</p>
+      <div style="position:relative;width:100%;max-width:480px;margin:0 auto;height:340px">
+        <canvas id="radarChart"></canvas>
+      </div>
+      <div style="display:flex;gap:20px;justify-content:center;margin-top:12px;font-size:12px;color:var(--text3);flex-wrap:wrap">
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:3px;background:#1a7a2a;display:inline-block;border-radius:2px"></span>Your diet</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:3px;background:#c0782a;display:inline-block;border-radius:2px"></span>Mediterranean</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:3px;background:#1a4a7a;display:inline-block;border-radius:2px"></span>NHS / WHO</span>
+      </div>
+    </div>
+
+    <!-- Food factor breakdown -->
+    <div class="section">
+      <p class="section-title">Factor breakdown</p>
+      <div id="food-factors"></div>
+    </div>
+
+    <!-- Health impact -->
+    <div class="section">
+      <p class="section-title">What your diet is doing to your body right now</p>
+      <div class="impact-grid" id="impact-grid"></div>
+    </div>
+
+    <!-- Tips -->
+    <div class="section">
+      <p class="section-title">Your top personalised improvements</p>
+      <div id="tips-list"></div>
+    </div>
+
+    <div class="note-box">
+      <strong style="color:var(--text)">Sources:</strong> Mediterranean diet scoring adapted from Trichopoulou et al. (2003) and PREDIMED trial (NEJM 2013). NHS guidelines: Eatwell Guide (2016, updated 2024). WHO dietary recommendations (2020). UPF classification: NOVA system (Monteiro et al.). Cancer risk: WHO IARC red/processed meat classification (2015). Life expectancy estimates based on Global Burden of Disease dietary risk factors (Lancet 2019). This tool is informational only — not a substitute for advice from a dietitian or doctor.
+    </div>
+  </div>
+</div>
+
+<footer>
+  Part of <a href="https://realitychecks.app">realitychecks.app</a> · Free tools that make you think · Not medical advice
+</footer>
+
+<script>
+function v(id) { return document.getElementById(id); }
+
+// Slider labels
+var FV_LABELS = ['0 portions','1 portion','2 portions','3 portions','4 portions','5 portions','6 portions','7 portions','8 portions','9 portions','10 portions'];
+var VARIETY_LABELS = ['No variety (same 1-2 foods)','Little variety','Some variety','Good variety','Excellent variety'];
+var MEAT_LABELS = ['Never','Rarely (once a week)','3–4 times/week','Most days','Daily or more'];
+var FISH_LABELS = ['Never','Once a week','Twice a week','3 times/week','4+ times/week'];
+var LEGUMES_LABELS = ['Never','Rarely','1–2 times/week','Most days','Daily'];
+var GRAINS_LABELS = ['All refined (white bread/pasta/rice)','Mostly refined','Mixed','Mostly wholegrains','All wholegrains'];
+var SUGAR_LABELS = ['None','Very little','Moderate','Quite a lot','Heavy (daily sugary drinks/sweets)'];
+var OIL_LABELS = ['Never use olive oil / healthy fats','Rarely','Sometimes','Often','Daily — primary cooking fat'];
+var UPF_LABELS = ['Never','Rarely','Some most days','Quite a lot daily','Most of my diet'];
+var DAIRY_LABELS = ['None','Very little','Moderate','Quite a lot','Heavy daily'];
+var COOK_LABELS = ['Never — all takeaway/ready meals','Rarely','A few times a week','Most days','Every meal from scratch'];
+var MEALS_LABELS = ['Very irregular / skip meals often','Fairly irregular','Fairly regular','Regular mealtimes','Very regular, consistent mealtimes'];
+var WATER_LABELS = ['Very little water/hydrating foods','Some','Moderate','Good','Excellent — lots of fruit, veg, soups'];
+
+function bindSlider(id, outId, labels) {
+  v(id).addEventListener('input', function(){ v(outId).textContent = labels[this.value]; });
+}
+bindSlider('fv','fv-out',FV_LABELS);
+bindSlider('fv-variety','fv-variety-out',VARIETY_LABELS);
+bindSlider('meat','meat-out',MEAT_LABELS);
+bindSlider('fish','fish-out',FISH_LABELS);
+bindSlider('legumes','legumes-out',LEGUMES_LABELS);
+bindSlider('grains','grains-out',GRAINS_LABELS);
+bindSlider('sugar','sugar-out',SUGAR_LABELS);
+bindSlider('oil','oil-out',OIL_LABELS);
+bindSlider('upf','upf-out',UPF_LABELS);
+bindSlider('dairy','dairy-out',DAIRY_LABELS);
+bindSlider('cook','cook-out',COOK_LABELS);
+bindSlider('meals','meals-out',MEALS_LABELS);
+bindSlider('water','water-out',WATER_LABELS);
+
+var radarChart = null;
+
+function calculate() {
+  var fv       = parseInt(v('fv').value);
+  var fvV      = parseInt(v('fv-variety').value);
+  var meat     = parseInt(v('meat').value);
+  var fish     = parseInt(v('fish').value);
+  var legumes  = parseInt(v('legumes').value);
+  var grains   = parseInt(v('grains').value);
+  var sugar    = parseInt(v('sugar').value);
+  var oil      = parseInt(v('oil').value);
+  var upf      = parseInt(v('upf').value);
+  var dairy    = parseInt(v('dairy').value);
+  var cook     = parseInt(v('cook').value);
+  var meals    = parseInt(v('meals').value);
+  var water    = parseInt(v('water').value);
+  var alcohol  = parseInt(v('alcohol-diet').value);
+  var speed    = parseInt(v('eating-speed').value);
+
+  // Score each category 0–10
+  var scores = {};
+
+  // Fruit & veg (0–10)
+  scores.fruitveg = Math.min(10, fv * 10/8) * 0.7 + (fvV/4*10) * 0.3;
+
+  // Protein quality (0–10)
+  var meatPenalty = [0, 1, 3, 5, 8][meat];
+  var fishBonus   = [0, 4, 7, 9, 10][fish];
+  var legumeBonus = [0, 2, 5, 8, 10][legumes];
+  scores.protein = Math.max(0, Math.min(10, (fishBonus + legumeBonus) / 2 - meatPenalty * 0.5 + 5));
+
+  // Carb quality (0–10)
+  scores.carbs = (grains/4*6) + Math.max(0, (4-sugar)/4*4);
+
+  // Fats (0–10)
+  scores.fats = (oil/4*6) + Math.max(0, (4-upf)/4*4);
+
+  // Habits (0–10)
+  scores.habits = (cook/4*4) + (meals/4*3) + (water/4*2) + Math.max(0,(4-alcohol)/4) + speed/4;
+
+  // Dairy (neutral-ish, 0–10)
+  scores.dairy = dairy === 2 ? 7 : dairy <= 1 ? 6 : dairy === 3 ? 6 : 5;
+
+  // Overall score /100
+  var weights = { fruitveg:0.25, protein:0.20, carbs:0.18, fats:0.18, habits:0.14, dairy:0.05 };
+  var overall = 0;
+  for (var k in weights) overall += scores[k] * weights[k] * 10;
+  overall = Math.round(overall);
+
+  // Mediterranean alignment (0–100)
+  // Med diet: high FV, fish, legumes, olive oil, wholegrains, low meat, low UPF, moderate dairy
+  var medScore = 0;
+  medScore += Math.min(25, fv * 25/8);          // FV heavily weighted
+  medScore += fish >= 2 ? 15 : fish * 7;         // fish
+  medScore += legumes >= 2 ? 15 : legumes * 7;   // legumes
+  medScore += oil >= 2 ? 15 : oil * 7;           // olive oil
+  medScore += grains >= 3 ? 10 : grains * 3;     // wholegrains
+  medScore += Math.max(0, (4-meat)) * 3;         // low meat
+  medScore += Math.max(0, (4-upf)) * 2.5;       // low UPF
+  medScore += alcohol <= 1 ? 5 : Math.max(0, (4-alcohol)) * 2.5; // low alcohol
+  medScore = Math.round(Math.min(100, medScore));
+
+  // NHS/WHO compliance (0–100)
+  var nhsScore = 0;
+  nhsScore += fv >= 5 ? 25 : fv * 5;             // 5 a day
+  nhsScore += fish >= 2 ? 15 : fish * 7;          // 2 portions fish
+  nhsScore += grains >= 3 ? 15 : grains * 5;      // wholegrains
+  nhsScore += sugar <= 1 ? 15 : Math.max(0, (4-sugar)*4); // low sugar
+  nhsScore += Math.max(0, (4-meat)) * 4;          // limit red meat
+  nhsScore += Math.max(0, (4-upf)) * 3.75;       // limit UPF
+  nhsScore += alcohol === 0 ? 10 : Math.max(0, (3-alcohol)*4); // alcohol
+  nhsScore = Math.round(Math.min(100, nhsScore));
+
+  // Life expectancy effect
+  var lifeEffect = 0;
+  if (overall >= 80) lifeEffect = 3;
+  else if (overall >= 65) lifeEffect = 1.5;
+  else if (overall >= 50) lifeEffect = 0;
+  else if (overall >= 35) lifeEffect = -1.5;
+  else lifeEffect = -3;
+  // Extra from processed meat
+  if (meat >= 3) lifeEffect -= 1;
+  if (meat >= 4) lifeEffect -= 0.5;
+  lifeEffect = Math.round(lifeEffect * 10) / 10;
+
+  // Tier
+  var tier = overall >= 80 ? 'Excellent' : overall >= 65 ? 'Good' : overall >= 50 ? 'Average' : overall >= 35 ? 'Poor' : 'Very poor';
+  var tierColor = overall >= 80 ? 'var(--green)' : overall >= 65 ? '#5a9a2a' : overall >= 50 ? 'var(--amber)' : overall >= 35 ? '#d06010' : 'var(--red)';
+
+  // Biggest strength & gap
+  var scoreArr = [
+    { name:'Fruit & veg', val: scores.fruitveg },
+    { name:'Protein', val: scores.protein },
+    { name:'Carbs', val: scores.carbs },
+    { name:'Fats', val: scores.fats },
+    { name:'Habits', val: scores.habits }
+  ];
+  scoreArr.sort(function(a,b){ return b.val - a.val; });
+  var strength = scoreArr[0].name;
+  var gap = scoreArr[scoreArr.length-1].name;
+
+  // Show results
+  v('results').style.display = 'block';
+  v('results').scrollIntoView({ behavior:'smooth', block:'start' });
+
+  setTimeout(function(){
+    v('overall-bar').style.width = overall + '%';
+    v('med-bar').style.width = medScore + '%';
+    v('nhs-bar').style.width = nhsScore + '%';
+  }, 100);
+
+  v('overall-score').textContent = overall;
+  v('med-score').textContent = medScore + '%';
+  v('nhs-score').textContent = nhsScore + '%';
+
+  v('s-life').textContent = (lifeEffect >= 0 ? '+' : '') + lifeEffect + ' yrs';
+  v('s-life').style.color = lifeEffect >= 0 ? 'var(--green)' : 'var(--red)';
+  v('s-tier').textContent = tier;
+  v('s-tier').style.color = tierColor;
+  v('s-strength').textContent = strength;
+  v('s-gap').textContent = gap;
+
+  // Verdict
+  var vBg, vColor, vMsg;
+  if (overall >= 80) {
+    vBg='var(--green-bg)'; vColor='var(--green)';
+    vMsg = 'Excellent diet. You\'re closely aligned with both the Mediterranean diet and NHS guidelines. Your eating habits are estimated to add up to ' + lifeEffect + ' years to your life expectancy compared to an average Western diet. Keep it up.';
+  } else if (overall >= 65) {
+    vBg='var(--green-bg)'; vColor='#3a7a20';
+    vMsg = 'Good diet with some clear strengths. You\'re above average but there are meaningful gains available — particularly around ' + gap.toLowerCase() + '. Closing the gap to the Mediterranean diet could add another year or two to your life expectancy.';
+  } else if (overall >= 50) {
+    vBg='var(--amber-bg)'; vColor='var(--amber)';
+    vMsg = 'Average diet — typical of a Western eating pattern. The good news is that even modest improvements here have outsized health benefits. Focus on ' + gap.toLowerCase() + ' first for the biggest impact.';
+  } else if (overall >= 35) {
+    vBg='var(--red-bg)'; vColor='#c05010';
+    vMsg = 'Your diet is likely contributing to increased inflammation, energy instability and elevated disease risk. This is estimated to cost around ' + Math.abs(lifeEffect) + ' years of life expectancy. The biggest wins would come from reducing UPF, increasing fruit and veg, and improving ' + gap.toLowerCase() + '.';
+  } else {
+    vBg='var(--red-bg)'; vColor='var(--red)';
+    vMsg = 'Your current diet is significantly below recommended levels across most areas. This is one of the most impactful areas you could change — diet quality is directly linked to heart disease, cancer risk, diabetes and longevity. Small consistent changes will make a real difference.';
+  }
+  var ve = v('verdict');
+  ve.style.background = vBg; ve.style.color = vColor; ve.style.borderColor = vColor + '44';
+  ve.textContent = vMsg;
+
+  // Radar chart
+  var radarLabels = ['Fruit & Veg', 'Protein Quality', 'Carb Quality', 'Healthy Fats', 'Habits & Timing', 'Dairy'];
+  var yourData  = [scores.fruitveg, scores.protein, scores.carbs, scores.fats, scores.habits, scores.dairy];
+  var medData   = [9.5, 8.5, 8, 9, 7.5, 6.5];
+  var nhsData   = [8, 7, 7.5, 7, 7, 7];
+
+  if (radarChart) radarChart.destroy();
+  radarChart = new Chart(v('radarChart'), {
+    type: 'radar',
+    data: {
+      labels: radarLabels,
+      datasets: [
+        { label:'Your diet', data:yourData, borderColor:'#1a7a2a', backgroundColor:'rgba(26,122,42,0.15)', borderWidth:2, pointRadius:3 },
+        { label:'Mediterranean', data:medData, borderColor:'#c0782a', backgroundColor:'rgba(192,120,42,0.08)', borderWidth:2, borderDash:[5,3], pointRadius:3 },
+        { label:'NHS / WHO', data:nhsData, borderColor:'#1a4a7a', backgroundColor:'rgba(26,74,122,0.06)', borderWidth:2, borderDash:[2,4], pointRadius:3 }
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:false } },
+      scales:{ r:{ min:0, max:10, ticks:{ stepSize:2, font:{size:10}, color:'#7a9a70' }, grid:{ color:'rgba(20,60,10,0.08)' }, pointLabels:{ font:{size:11}, color:'#3a5a30' } } }
+    }
+  });
+
+  // Food factors
+  var factors = [
+    { emoji:'🥦', name:'Fruit & vegetables', your:Math.round(scores.fruitveg*10)/10, max:10, note: fv + ' portions/day — ' + (fv >= 7 ? 'Excellent' : fv >= 5 ? 'Meets NHS 5-a-day' : fv >= 3 ? 'Below target' : 'Well below target') },
+    { emoji:'🐟', name:'Protein quality', your:Math.round(scores.protein*10)/10, max:10, note: FISH_LABELS[fish] + ' fish, ' + LEGUMES_LABELS[legumes] + ' legumes' },
+    { emoji:'🌾', name:'Carbohydrate quality', your:Math.round(scores.carbs*10)/10, max:10, note: GRAINS_LABELS[grains] + ' · Sugar: ' + SUGAR_LABELS[sugar] },
+    { emoji:'🫒', name:'Fats & processing', your:Math.round(scores.fats*10)/10, max:10, note: OIL_LABELS[oil] + ' · UPF: ' + UPF_LABELS[upf] },
+    { emoji:'🍽️', name:'Eating habits', your:Math.round(scores.habits*10)/10, max:10, note: COOK_LABELS[cook] + ' · ' + MEALS_LABELS[meals] },
+    { emoji:'🥛', name:'Dairy', your:scores.dairy, max:10, note:DAIRY_LABELS[dairy] }
+  ];
+
+  var ffHtml = '';
+  for (var i=0; i<factors.length; i++) {
+    var f = factors[i];
+    var pct = Math.round(f.your/f.max*100);
+    var color = f.your >= 7 ? '#1a7a2a' : f.your >= 5 ? '#7a9a20' : f.your >= 3 ? '#b7600a' : '#c0392b';
+    ffHtml += '<div class="food-row">' +
+      '<span class="fr-emoji">'+f.emoji+'</span>' +
+      '<div class="fr-body">' +
+        '<div class="fr-top"><span class="fr-name">'+f.name+'</span><span class="fr-score" style="color:'+color+'">'+f.your.toFixed(1)+'/10</span></div>' +
+        '<div class="fr-sub">'+f.note+'</div>' +
+        '<div class="fr-bar-wrap"><div class="fr-bar-fill" style="width:'+pct+'%;background:'+color+'"></div></div>' +
+      '</div>' +
+    '</div>';
+  }
+  v('food-factors').innerHTML = ffHtml;
+
+  // Health impacts
+  var impacts = [
+    { emoji:'❤️', title:'Cardiovascular risk', val: overall >= 70 ? 'Below average' : overall >= 50 ? 'Average' : 'Elevated', sub:'Diet accounts for ~30% of cardiovascular disease risk', color: overall >= 70 ? 'var(--green)' : overall >= 50 ? 'var(--amber)' : 'var(--red)' },
+    { emoji:'🔥', title:'Inflammation levels', val: upf <= 1 && fv >= 5 ? 'Low' : upf >= 3 ? 'High' : 'Moderate', sub:'UPF and low fruit/veg intake drive chronic inflammation', color: upf <= 1 ? 'var(--green)' : upf >= 3 ? 'var(--red)' : 'var(--amber)' },
+    { emoji:'⚡', title:'Energy & blood sugar', val: grains >= 3 && sugar <= 1 ? 'Stable' : sugar >= 3 ? 'Unstable' : 'Moderate swings', sub:'Wholegrains and low sugar = more stable energy levels', color: grains >= 3 && sugar <= 1 ? 'var(--green)' : sugar >= 3 ? 'var(--red)' : 'var(--amber)' },
+    { emoji:'🧠', title:'Brain & mood', val: fish >= 2 && fv >= 5 ? 'Well supported' : overall >= 60 ? 'Reasonably supported' : 'Undersupported', sub:'Omega-3s, polyphenols and B vitamins support cognitive function', color: fish >= 2 && fv >= 5 ? 'var(--green)' : overall >= 60 ? 'var(--amber)' : 'var(--red)' },
+    { emoji:'🦠', title:'Gut microbiome', val: legumes >= 2 && fv >= 5 ? 'Thriving' : fv >= 3 ? 'Moderate' : 'Depleted', sub:'Fibre from plants feeds healthy gut bacteria', color: legumes >= 2 && fv >= 5 ? 'var(--green)' : fv >= 3 ? 'var(--amber)' : 'var(--red)' },
+    { emoji:'⚖️', title:'Weight management', val: cook >= 2 && upf <= 1 ? 'Well supported' : upf >= 3 ? 'Harder to manage' : 'Moderate', sub:'Home cooking and low UPF are the strongest predictors of healthy weight', color: cook >= 2 && upf <= 1 ? 'var(--green)' : upf >= 3 ? 'var(--red)' : 'var(--amber)' }
+  ];
+
+  var igHtml = '';
+  for (var j=0; j<impacts.length; j++) {
+    var imp = impacts[j];
+    igHtml += '<div class="impact-card"><span class="ic-emoji">'+imp.emoji+'</span><div class="ic-title">'+imp.title+'</div><div class="ic-val" style="color:'+imp.color+'">'+imp.val+'</div><div class="ic-sub">'+imp.sub+'</div></div>';
+  }
+  v('impact-grid').innerHTML = igHtml;
+
+  // Tips
+  var tips = [];
+  if (fv < 5) tips.push({ emoji:'🥦', text:'<strong>Get to 5 portions of fruit & veg a day.</strong> Add one extra portion to each meal — a handful of spinach, a banana, a side salad. This single change is the most evidence-backed dietary intervention there is.' });
+  if (fish < 2) tips.push({ emoji:'🐟', text:'<strong>Eat oily fish at least once a week.</strong> Salmon, mackerel, sardines or trout. Rich in omega-3s linked to lower heart disease and depression risk.' });
+  if (legumes < 2) tips.push({ emoji:'🫘', text:'<strong>Add legumes 2–3 times a week.</strong> Lentils, chickpeas, black beans — cheap, filling, and one of the strongest predictors of longevity across cultures.' });
+  if (upf >= 3) tips.push({ emoji:'🚫', text:'<strong>Reduce ultra-processed food significantly.</strong> UPF drives inflammation, disrupts gut microbiome and makes calorie overconsumption almost inevitable. Cook one extra meal from scratch this week.' });
+  if (sugar >= 3) tips.push({ emoji:'🧃', text:'<strong>Cut added sugar — start with drinks.</strong> Swapping sugary drinks and juice for water alone can dramatically reduce your daily sugar intake without feeling deprived.' });
+  if (oil < 2) tips.push({ emoji:'🫒', text:'<strong>Switch to olive oil as your primary fat.</strong> Extra virgin olive oil is the most studied anti-inflammatory food in existence. Use it for cooking and dressing.' });
+  if (grains < 2) tips.push({ emoji:'🌾', text:'<strong>Switch to wholegrains.</strong> Swap white bread for wholegrain, white pasta for wholewheat, white rice for brown or basmati. The fibre difference is significant.' });
+  if (meat >= 3) tips.push({ emoji:'🥩', text:'<strong>Reduce red and processed meat.</strong> Aim for less than 70g per day. Replace one meat meal a week with fish, legumes or eggs.' });
+  if (cook < 2) tips.push({ emoji:'🍳', text:'<strong>Cook from scratch more often.</strong> Even one extra home-cooked meal a week makes a measurable difference to diet quality. Batch cooking on Sundays is the most sustainable approach.' });
+  tips.push({ emoji:'🌈', text:'<strong>Eat more colours.</strong> Each colour of fruit and veg contains different phytonutrients. Aim for at least 3 different colours on your plate each day.' });
+
+  var tHtml = '';
+  for (var t=0; t<Math.min(6, tips.length); t++) {
+    tHtml += '<div class="tip-item"><span class="tip-emoji">'+tips[t].emoji+'</span><span class="tip-text">'+tips[t].text+'</span></div>';
+  }
+  v('tips-list').innerHTML = tHtml;
+}
+</script>
+</body>
+</html>
