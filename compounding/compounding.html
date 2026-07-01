@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Compounding Regret Calculator — What Is Waiting Really Costing You?</title>
+<meta name="description" content="Pick a skill or goal you've been putting off. See what delay is really costing you — and discover that for many skills, you might actually be closer to your peak than you think.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0e0e18;
+  --surface: #16161f;
+  --surface2: #1e1e2a;
+  --surface3: #262635;
+  --border: rgba(200,180,255,0.08);
+  --border2: rgba(200,180,255,0.15);
+  --text: #f0eeff;
+  --text2: #9890c0;
+  --text3: #4a4870;
+  --purple: #7c4abf;
+  --purple-light: #c0a0ff;
+  --purple-bg: rgba(124,74,191,0.15);
+  --gold: #f0b040;
+  --gold-bg: rgba(240,176,64,0.12);
+  --green: #30c070;
+  --green-bg: rgba(48,192,112,0.12);
+  --red: #f06060;
+  --red-bg: rgba(240,96,96,0.12);
+  --cyan: #40c0d0;
+  --cyan-bg: rgba(64,192,208,0.12);
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+header {
+  padding: 3.5rem 2rem 2.5rem;
+  text-align: center;
+  background: radial-gradient(ellipse at 50% 0%, #1a0a3a 0%, var(--bg) 70%);
+  border-bottom: 1px solid var(--border);
+}
+header h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(1.9rem, 4.5vw, 3.2rem);
+  line-height: 1.15; margin-bottom: .75rem;
+  background: linear-gradient(135deg, #f0eeff 0%, #c0a0ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+header h1 em {
+  font-style: italic;
+  background: linear-gradient(135deg, #f0b040, #f07040);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+header p { color: var(--text2); font-size: 15px; max-width: 560px; margin: 0 auto; }
+
+.container { max-width: 860px; margin: 2rem auto; padding: 0 1.25rem 4rem; }
+
+.section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.5rem; margin-bottom: 1rem;
+}
+
+.section-title {
+  font-size: 11px; font-weight: 500;
+  letter-spacing: .09em; text-transform: uppercase;
+  color: var(--text3); margin-bottom: 1.25rem;
+}
+
+.field { margin-bottom: 1rem; }
+.field:last-child { margin-bottom: 0; }
+.field label { display: block; font-size: 13px; color: var(--text2); margin-bottom: .4rem; font-weight: 500; }
+.field-sub { font-size: 11px; color: var(--text3); margin-top: .25rem; line-height: 1.4; }
+
+select, input[type=number] {
+  width: 100%; background: var(--surface2);
+  border: 1px solid var(--border2); border-radius: 8px;
+  padding: 9px 12px; font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text); outline: none;
+}
+select:focus, input[type=number]:focus { border-color: var(--purple-light); }
+select option { background: var(--surface2); }
+
+input[type=range] {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 4px;
+  background: var(--surface3); border-radius: 2px;
+  outline: none; cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--purple-light);
+  border: 2px solid var(--bg); cursor: pointer;
+}
+input[type=range]::-moz-range-thumb {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--purple-light);
+  border: 2px solid var(--bg); cursor: pointer;
+}
+.range-row { display: flex; align-items: center; gap: 10px; margin-top: .4rem; }
+.range-row input[type=range] { flex: 1; }
+.range-val { font-size: 14px; font-weight: 500; min-width: 100px; text-align: right; color: var(--text); }
+
+/* Goal cards */
+.goal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: .5rem; margin-bottom: .75rem;
+}
+.goal-btn {
+  background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: 10px; padding: .75rem .5rem;
+  text-align: center; cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text2); font-size: 13px;
+  transition: all .15s;
+}
+.goal-btn:hover { border-color: var(--purple-light); color: var(--text); }
+.goal-btn.active { border-color: var(--purple-light); background: var(--purple-bg); color: var(--purple-light); }
+.goal-btn .gb-emoji { font-size: 22px; display: block; margin-bottom: .25rem; }
+.goal-btn .gb-name { font-weight: 500; line-height: 1.3; }
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+@media(max-width:540px) { .two-col { grid-template-columns: 1fr; } }
+
+.calc-btn {
+  display: block; width: 100%;
+  background: var(--purple); color: white;
+  border: none; border-radius: 12px;
+  padding: 1.1rem 2rem; font-size: 16px;
+  font-family: 'DM Sans', sans-serif; font-weight: 500;
+  cursor: pointer; margin: 1.5rem 0; transition: opacity .15s;
+}
+.calc-btn:hover { opacity: .85; }
+
+#results { display: none; }
+
+/* Peak age display */
+.peak-banner {
+  border-radius: 14px; padding: 1.75rem;
+  text-align: center; margin-bottom: 1rem;
+  border: 1px solid transparent;
+  position: relative; overflow: hidden;
+}
+.peak-banner::before {
+  content: ''; position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(240,176,64,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+.pb-label { font-size: 11px; letter-spacing: .09em; text-transform: uppercase; color: var(--text3); margin-bottom: .5rem; }
+.pb-title { font-family: 'DM Serif Display', serif; font-size: 2rem; line-height: 1.2; margin-bottom: .5rem; }
+.pb-peak { font-size: 3.5rem; font-family: 'DM Serif Display', serif; line-height: 1; margin-bottom: .25rem; }
+.pb-sub { font-size: 14px; color: var(--text2); max-width: 500px; margin: .5rem auto 0; line-height: 1.6; }
+
+/* Score cards */
+.score-row {
+  display: grid; grid-template-columns: repeat(3,1fr);
+  gap: .75rem; margin-bottom: 1rem;
+}
+@media(max-width:500px) { .score-row { grid-template-columns: 1fr; } }
+
+.score-card {
+  border-radius: 12px; padding: 1.1rem;
+  text-align: center; border: 1px solid transparent;
+}
+.sc-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: .07em; margin-bottom: .3rem; }
+.sc-val { font-size: 1.8rem; font-weight: 500; line-height: 1.2; }
+.sc-sub { font-size: 11px; color: var(--text2); margin-top: .2rem; }
+
+.verdict {
+  border-radius: 10px; padding: 1rem 1.25rem;
+  font-size: 14px; line-height: 1.65;
+  margin-bottom: 1rem; border: 1px solid transparent;
+}
+
+.chart-section {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 1.5rem; margin-bottom: 1rem;
+}
+.chart-title { font-size: 13px; font-weight: 500; color: var(--text2); margin-bottom: 1rem; }
+
+/* Skill dimensions */
+.dim-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: .6rem; margin-bottom: 1rem;
+}
+@media(max-width:500px) { .dim-grid { grid-template-columns: 1fr; } }
+
+.dim-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 1rem 1.1rem;
+}
+.dc-title { font-size: 12px; color: var(--text2); margin-bottom: .5rem; font-weight: 500; }
+.dc-bar-wrap { height: 6px; background: var(--surface3); border-radius: 3px; margin-bottom: .4rem; overflow: hidden; }
+.dc-bar-fill { height: 100%; border-radius: 3px; transition: width .8s ease; }
+.dc-labels { display: flex; justify-content: space-between; font-size: 10px; color: var(--text3); }
+.dc-your { font-size: 13px; font-weight: 500; margin-top: .3rem; }
+
+/* Compounding table */
+.compound-table { width: 100%; border-collapse: collapse; }
+.compound-table th {
+  font-size: 11px; font-weight: 500;
+  letter-spacing: .06em; text-transform: uppercase;
+  color: var(--text3); padding: .5rem .75rem;
+  text-align: left; border-bottom: 1px solid var(--border);
+}
+.compound-table td {
+  padding: .55rem .75rem; border-bottom: 1px solid var(--border);
+  font-size: 13px; vertical-align: middle;
+}
+.compound-table tr:last-child td { border-bottom: none; }
+.compound-table .highlight { background: var(--purple-bg); }
+.compound-table .highlight td { color: var(--purple-light); font-weight: 500; }
+
+.note-box {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 1rem 1.2rem;
+  font-size: 13px; color: var(--text2); line-height: 1.65;
+}
+
+footer {
+  background: var(--surface); border-top: 1px solid var(--border);
+  color: var(--text3); text-align: center;
+  padding: 1.5rem 2rem; font-size: 12.5px; line-height: 1.7;
+}
+footer a { color: var(--text2); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>What is waiting <em>really</em> costing you?</h1>
+  <p>Pick a skill or goal you've been putting off. See the compounding cost of delay — and discover that for many skills, your age might actually be closer to your peak than you think.</p>
+</header>
+
+<div class="container">
+
+  <!-- GOAL PICKER -->
+  <div class="section">
+    <p class="section-title">What have you been putting off?</p>
+    <div class="goal-grid" id="goal-grid"></div>
+    <p class="field-sub" style="margin-top:.5rem">Select one — or pick "Custom" to describe your own</p>
+  </div>
+
+  <!-- ABOUT YOU -->
+  <div class="section">
+    <p class="section-title">About you</p>
+    <div class="two-col">
+      <div class="field">
+        <label for="age">Your age</label>
+        <input type="number" id="age" min="14" max="90" value="35">
+      </div>
+      <div class="field">
+        <label for="delay">How long have you been thinking about this?</label>
+        <select id="delay">
+          <option value="0">Just thought of it</option>
+          <option value="1">A few months</option>
+          <option value="1" selected>About a year</option>
+          <option value="2">2 years</option>
+          <option value="3">3 years</option>
+          <option value="5">5 years</option>
+          <option value="10">10 years</option>
+          <option value="15">15+ years</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="hours">Hours per week you could realistically commit</label>
+        <select id="hours">
+          <option value="1">1 hour/week</option>
+          <option value="2">2 hours/week</option>
+          <option value="3" selected>3 hours/week</option>
+          <option value="5">5 hours/week</option>
+          <option value="7">7 hours/week</option>
+          <option value="10">10 hours/week</option>
+          <option value="15">15 hours/week</option>
+          <option value="20">20+ hours/week</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="motivation">How motivated are you right now?</label>
+        <select id="motivation">
+          <option value="0.6">Mildly curious</option>
+          <option value="0.8" selected>Genuinely interested</option>
+          <option value="1.0">Strongly motivated</option>
+          <option value="1.2">Obsessively committed</option>
+        </select>
+        <p class="field-sub">Motivation multiplies your effective learning rate</p>
+      </div>
+    </div>
+    <div class="field" style="margin-top:.5rem">
+      <label>Prior experience with this skill — <span id="exp-out" style="font-weight:500;color:var(--text)">None — complete beginner</span></label>
+      <div class="range-row">
+        <input type="range" id="experience" min="0" max="4" value="0" step="1">
+      </div>
+      <p class="field-sub">Prior knowledge accelerates learning through transfer effects</p>
+    </div>
+  </div>
+
+  <button class="calc-btn" id="calc-btn" onclick="calculate()">Show me the cost of waiting →</button>
+
+  <div id="results">
+
+    <!-- Peak age banner -->
+    <div class="peak-banner" id="peak-banner">
+      <p class="pb-label" id="pb-label">Your peak age for this skill</p>
+      <p class="pb-title" id="pb-title">—</p>
+      <p class="pb-peak" id="pb-peak">—</p>
+      <p class="pb-sub" id="pb-sub">—</p>
+    </div>
+
+    <!-- Score cards -->
+    <div class="score-row">
+      <div class="score-card" style="background:var(--red-bg);border-color:rgba(240,96,96,0.2)">
+        <p class="sc-label">Already lost</p>
+        <p class="sc-val" id="sc-lost" style="color:var(--red)">—</p>
+        <p class="sc-sub" id="sc-lost-sub">hours of compounded progress</p>
+      </div>
+      <div class="score-card" style="background:var(--purple-bg);border-color:rgba(192,160,255,0.2)">
+        <p class="sc-label">Your capacity score</p>
+        <p class="sc-val" id="sc-capacity" style="color:var(--purple-light)">—</p>
+        <p class="sc-sub">% of peak potential</p>
+      </div>
+      <div class="score-card" style="background:var(--green-bg);border-color:rgba(48,192,112,0.2)">
+        <p class="sc-label">If you start today</p>
+        <p class="sc-val" id="sc-gain" style="color:var(--green)">—</p>
+        <p class="sc-sub" id="sc-gain-sub">hours in 1 year</p>
+      </div>
+    </div>
+
+    <div class="verdict" id="verdict"></div>
+
+    <!-- Main chart -->
+    <div class="chart-section">
+      <p class="chart-title" id="chart-title">Compounding progress — if you'd started then vs starting today</p>
+      <div style="position:relative;width:100%;height:300px">
+        <canvas id="mainChart"></canvas>
+      </div>
+      <div style="display:flex;gap:20px;margin-top:12px;font-size:12px;color:var(--text3);flex-wrap:wrap">
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:3px;background:#f06060;display:inline-block;border-radius:2px"></span>If you'd started when you first thought of it</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:3px;background:#c0a0ff;display:inline-block;border-radius:2px"></span>Starting today</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:3px;background:#f0b040;display:inline-block;border-radius:2px;border-top:2px dashed #f0b040"></span>Age-adjusted peak capacity</span>
+      </div>
+    </div>
+
+    <!-- Skill dimensions -->
+    <div class="section">
+      <p class="section-title" id="dim-title">How your age affects this skill</p>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:1rem" id="dim-intro"></p>
+      <div class="dim-grid" id="dim-grid"></div>
+    </div>
+
+    <!-- Compounding table -->
+    <div class="section">
+      <p class="section-title">What you'd achieve — starting today vs each year of further delay</p>
+      <table class="compound-table" id="compound-table">
+        <thead>
+          <tr>
+            <th>Scenario</th>
+            <th>Hours invested</th>
+            <th>Skill level (5yr)</th>
+            <th>Cost of waiting</th>
+          </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+
+    <div class="note-box">
+      <strong style="color:var(--text)">Sources:</strong> Peak age data from Hartshorne & Germine (2015) — "When Does Cognitive Functioning Peak?", Psychological Science. Vocabulary/knowledge peak: Virginia study of 50,000 participants. Emotional intelligence: Carstensen et al. Stanford. Learning rate modelling uses deliberate practice theory (Ericsson et al.) with age-adjusted neuroplasticity curves. Compounding skill model inspired by research on expertise acquisition. Individual variation is enormous — these are population averages. Your 50-year-old friend who learns faster now than at 14 is backed by science, not just optimism.
+    </div>
+  </div>
+</div>
+
+<footer>
+  Part of <a href="https://realitychecks.app">realitychecks.app</a> · Free tools that make you think · Not a substitute for professional advice
+</footer>
+
+<script>
+function v(id) { return document.getElementById(id); }
+
+// Goal definitions
+// peakAge: age of peak performance
+// peakCurve: how quickly skill declines after peak (0=never, 1=fast)
+// dimensions: [{name, yourPct fn(age), peakAge, note}]
+// learningMultiplier: how much age affects learning rate
+// compoundRate: annual skill compounding rate
+var GOALS = [
+  {
+    id:'language', emoji:'🗣️', name:'Learn a language',
+    peakAge: 'Late 20s for accent\n40s–60s for vocabulary',
+    peakAgeDisplay: '20s–60s',
+    peakNote: 'Grammar acquisition peaks in early adulthood but vocabulary, comprehension and conversational nuance keep improving well into your 60s. Adults learn faster than children when motivated — they bring context, pattern recognition and purpose.',
+    compoundRate: 0.18,
+    dims: [
+      { name:'Pronunciation/accent', peakAge:22, note:'Phonological learning peaks young — but adult accents are perfectly comprehensible' },
+      { name:'Vocabulary acquisition', peakAge:65, note:'Peaks in your 60s — adults learn words faster using contextual knowledge' },
+      { name:'Grammar intuition', peakAge:28, note:'Rule-based grammar learning peaks in late 20s' },
+      { name:'Conversational fluency', peakAge:45, note:'Social intelligence and context peak in middle age — great for conversation' }
+    ],
+    learningNote: 'Adults who learn languages later often reach higher functional fluency than children, despite taking longer to lose their accent.'
+  },
+  {
+    id:'instrument', emoji:'🎸', name:'Play an instrument',
+    peakAge: '20s for technique\n30s–40s for musicality',
+    peakAgeDisplay: '20s–40s',
+    peakNote: 'Fine motor control peaks in your 20s, but musical interpretation, emotional expression and harmonic understanding peak much later. Many of history\'s greatest musicians produced their finest work in their 40s and 50s.',
+    compoundRate: 0.20,
+    dims: [
+      { name:'Fine motor technique', peakAge:24, note:'Finger speed and precision peak in mid-20s' },
+      { name:'Musical interpretation', peakAge:48, note:'Emotional depth and phrasing peak in middle age' },
+      { name:'Harmonic understanding', peakAge:42, note:'Music theory comprehension improves with age and experience' },
+      { name:'Performance confidence', peakAge:50, note:'Stage presence and resilience improve with life experience' }
+    ],
+    learningNote: 'Adult learners often surpass childhood learners in musicality and expression, even if technical ceiling is slightly lower.'
+  },
+  {
+    id:'coding', emoji:'💻', name:'Learn to code',
+    peakAge: '30s–40s for architecture\n20s for raw speed',
+    peakAgeDisplay: '20s–40s',
+    peakNote: 'Raw processing speed peaks young, but system design, architectural thinking and debugging intuition peak in your 30s and 40s. Senior engineers are senior for a reason.',
+    compoundRate: 0.22,
+    dims: [
+      { name:'Raw learning speed', peakAge:26, note:'New syntax and pattern memorisation peaks in mid-20s' },
+      { name:'System design', peakAge:42, note:'Architectural thinking improves with experience and context' },
+      { name:'Debugging intuition', peakAge:45, note:'Pattern recognition for bugs improves with exposure' },
+      { name:'Problem abstraction', peakAge:38, note:'Abstract thinking and generalisation peak in late 30s' }
+    ],
+    learningNote: 'Coding is one of the most age-neutral skills. The fundamentals compound fast regardless of when you start.'
+  },
+  {
+    id:'writing', emoji:'✍️', name:'Write a book / blog',
+    peakAge: '40s–60s',
+    peakAgeDisplay: '40s–60s',
+    peakNote: 'Most great writers produce their best work in their 40s and beyond. Writing requires accumulated experience, emotional complexity and hard-won perspective — none of which you have at 22.',
+    compoundRate: 0.15,
+    dims: [
+      { name:'Vocabulary & prose', peakAge:65, note:'Word knowledge and sentence craft peak in your 60s' },
+      { name:'Narrative structure', peakAge:48, note:'Storytelling intuition improves with life experience' },
+      { name:'Emotional depth', peakAge:55, note:'Emotional complexity in writing peaks in middle age' },
+      { name:'Idea generation', peakAge:42, note:'Creative ideation remains strong well into middle age' }
+    ],
+    learningNote: 'If you\'re over 40 and thinking about writing, the timing is arguably better than it\'s ever been.'
+  },
+  {
+    id:'fitness', emoji:'🏋️', name:'Get fit / build strength',
+    peakAge: 'Strength: late 20s\nEndurance: early 30s',
+    peakAgeDisplay: 'Late 20s–30s',
+    peakNote: 'Peak athletic performance is in your late 20s and 30s. But fitness benefits — reduced disease risk, mental health, longevity — are available and significant at any age. A 70-year-old who starts resistance training gains muscle.',
+    compoundRate: 0.25,
+    dims: [
+      { name:'Muscle gain rate', peakAge:28, note:'Testosterone and growth hormone peak in late 20s' },
+      { name:'Cardiovascular efficiency', peakAge:32, note:'VO2 max peaks in early 30s but remains trainable' },
+      { name:'Recovery speed', peakAge:25, note:'Recovery is fastest in mid-20s — slows but remains adequate' },
+      { name:'Mind-muscle connection', peakAge:40, note:'Movement quality and body awareness improve with practice' }
+    ],
+    learningNote: 'Every decade of delay costs some ceiling — but the floor (health, function, wellbeing) remains accessible at any age.'
+  },
+  {
+    id:'investing', emoji:'📈', name:'Start investing',
+    peakAge: 'The earlier the better',
+    peakAgeDisplay: 'Yesterday',
+    peakNote: 'Investing is pure compounding mathematics. There is no age advantage — only time advantage. Every year of delay is a year of compound growth that cannot be recovered. This is the one where your friend\'s argument doesn\'t apply.',
+    compoundRate: 0.30,
+    dims: [
+      { name:'Financial knowledge', peakAge:55, note:'Investment wisdom and risk judgement improve with experience' },
+      { name:'Emotional discipline', peakAge:50, note:'Ability to hold through downturns improves with age' },
+      { name:'Time in market', peakAge:18, note:'The earlier you start, the longer compounding works for you' },
+      { name:'Risk capacity', peakAge:30, note:'Ability to take on risk without panic peaks in early adulthood' }
+    ],
+    learningNote: 'The second best time to start investing is today. The best was 10 years ago.'
+  },
+  {
+    id:'meditation', emoji:'🧘', name:'Learn to meditate',
+    peakAge: '40s–70s',
+    peakAgeDisplay: '40s–70s',
+    peakNote: 'Meditation benefits from life experience, accumulated stress and a genuine desire for stillness — all of which tend to come with age. Long-term meditators in their 50s and 60s show brain structure changes that younger practitioners take decades to develop.',
+    compoundRate: 0.12,
+    dims: [
+      { name:'Emotional regulation', peakAge:55, note:'Prefrontal cortex maturity peaks and stabilises in middle age' },
+      { name:'Attentional control', peakAge:48, note:'Focused attention improves with sustained practice' },
+      { name:'Self-awareness', peakAge:60, note:'Insight and self-knowledge deepen with age and experience' },
+      { name:'Consistency', peakAge:45, note:'Habit formation and routine-keeping improve with age' }
+    ],
+    learningNote: 'Research consistently shows older adults achieve deeper meditative states faster than younger practitioners. Your friend would peak at this.'
+  },
+  {
+    id:'cooking', emoji:'🍳', name:'Learn to cook properly',
+    peakAge: '40s–60s',
+    peakAgeDisplay: '40s–60s',
+    peakNote: 'Great cooking is about palate development, patience and technique intuition — all of which improve with age. The world\'s greatest chefs produce their finest menus in their 40s and 50s.',
+    compoundRate: 0.15,
+    dims: [
+      { name:'Palate sophistication', peakAge:55, note:'Taste discrimination and flavour memory improve with exposure' },
+      { name:'Technique patience', peakAge:48, note:'Willingness to do things properly increases with age' },
+      { name:'Creativity', peakAge:45, note:'Creative cooking draws on accumulated food knowledge' },
+      { name:'Intuitive timing', peakAge:50, note:'Kitchen intuition develops through thousands of hours' }
+    ],
+    learningNote: 'If you\'re over 40, your palate is likely more developed than it\'s ever been. The timing is actually ideal.'
+  }
+];
+
+var selectedGoal = null;
+var EXP_LABELS = ['None — complete beginner','A little background','Some experience','Quite experienced','Very experienced'];
+
+// Build goal grid
+var ggHtml = '';
+for (var i=0; i<GOALS.length; i++) {
+  var g = GOALS[i];
+  ggHtml += '<button class="goal-btn" id="gb-'+g.id+'" onclick="selectGoal(\''+g.id+'\')">' +
+    '<span class="gb-emoji">'+g.emoji+'</span>' +
+    '<span class="gb-name">'+g.name+'</span>' +
+  '</button>';
+}
+v('goal-grid').innerHTML = ggHtml;
+
+v('experience').addEventListener('input', function(){ v('exp-out').textContent = EXP_LABELS[this.value]; });
+
+function selectGoal(id) {
+  selectedGoal = id;
+  for (var i=0; i<GOALS.length; i++) {
+    v('gb-'+GOALS[i].id).classList.toggle('active', GOALS[i].id === id);
+  }
+}
+
+// Select first by default
+selectGoal('language');
+
+var mainChart = null;
+
+function getGoal(id) {
+  for (var i=0; i<GOALS.length; i++) if (GOALS[i].id === id) return GOALS[i];
+  return GOALS[0];
+}
+
+function ageCapacity(age, peakAge) {
+  // Returns 0–100% capacity relative to peak
+  if (age <= peakAge) {
+    // Rising phase
+    return Math.min(100, 60 + (age / peakAge) * 40);
+  } else {
+    // Decline phase — gentle for cognitive, steeper for physical
+    var decline = Math.max(0, 1 - (age - peakAge) / 60);
+    return Math.max(40, 100 * decline);
+  }
+}
+
+function dimCapacity(age, dimPeakAge) {
+  if (age <= dimPeakAge) {
+    return Math.min(100, Math.round(50 + (age / dimPeakAge) * 50));
+  } else {
+    var d = Math.max(30, Math.round(100 - (age - dimPeakAge) * 1.2));
+    return d;
+  }
+}
+
+function compoundHours(hoursPerWeek, years, rate, capacityMultiplier, motivation) {
+  // Skills compound — each hour builds on the last
+  var total = 0;
+  var skillLevel = 0;
+  for (var yr=0; yr<years; yr++) {
+    var annualHours = hoursPerWeek * 52;
+    var effectiveHours = annualHours * capacityMultiplier * motivation;
+    skillLevel += effectiveHours * (1 + skillLevel * rate * 0.01);
+    total = skillLevel;
+  }
+  return Math.round(total);
+}
+
+function levelLabel(compoundedHours, goalId) {
+  if (goalId === 'investing') {
+    if (compoundedHours > 5000) return 'Expert investor';
+    if (compoundedHours > 2000) return 'Confident investor';
+    if (compoundedHours > 800) return 'Getting started';
+    return 'Beginner';
+  }
+  if (compoundedHours > 8000) return 'Expert / professional';
+  if (compoundedHours > 4000) return 'Advanced';
+  if (compoundedHours > 2000) return 'Upper intermediate';
+  if (compoundedHours > 800) return 'Intermediate';
+  if (compoundedHours > 300) return 'Elementary';
+  return 'Beginner';
+}
+
+function calculate() {
+  if (!selectedGoal) { alert('Please select a goal first!'); return; }
+  var goal = getGoal(selectedGoal);
+  var age = parseInt(v('age').value) || 35;
+  var delay = parseInt(v('delay').value) || 1;
+  var hoursPerWeek = parseInt(v('hours').value) || 3;
+  var motivation = parseFloat(v('motivation').value) || 1.0;
+  var experience = parseInt(v('experience').value);
+
+  // Overall capacity at current age (average across dimensions)
+  var totalCap = 0;
+  for (var d=0; d<goal.dims.length; d++) {
+    totalCap += dimCapacity(age, goal.dims[d].peakAge);
+  }
+  var avgCapacity = Math.round(totalCap / goal.dims.length);
+
+  // Experience bonus
+  var expBonus = [1.0, 1.1, 1.25, 1.4, 1.6][experience];
+
+  // Hours lost to delay
+  var hoursPerYear = hoursPerWeek * 52;
+  var lostHoursRaw = hoursPerYear * delay;
+  var lostCompounded = compoundHours(hoursPerWeek, delay, goal.compoundRate, avgCapacity/100, motivation * expBonus);
+
+  // What starting today gives in 1, 3, 5, 10 years
+  var gain1yr  = compoundHours(hoursPerWeek, 1,  goal.compoundRate, avgCapacity/100, motivation * expBonus);
+  var gain5yr  = compoundHours(hoursPerWeek, 5,  goal.compoundRate, avgCapacity/100, motivation * expBonus);
+  var gain10yr = compoundHours(hoursPerWeek, 10, goal.compoundRate, avgCapacity/100, motivation * expBonus);
+
+  v('results').style.display = 'block';
+  v('results').scrollIntoView({ behavior:'smooth', block:'start' });
+
+  // Peak banner
+  var peakBanner = v('peak-banner');
+  var isAtOrNearPeak = avgCapacity >= 85;
+  var isPastPeak = avgCapacity < 70;
+  var bannerBg = isAtOrNearPeak ? 'var(--gold-bg)' : isPastPeak ? 'var(--purple-bg)' : 'var(--cyan-bg)';
+  var bannerBorder = isAtOrNearPeak ? 'rgba(240,176,64,0.3)' : isPastPeak ? 'rgba(192,160,255,0.3)' : 'rgba(64,192,208,0.3)';
+  peakBanner.style.background = bannerBg;
+  peakBanner.style.borderColor = bannerBorder;
+  v('pb-label').textContent = 'Peak performance age for ' + goal.name.toLowerCase();
+  v('pb-title').textContent = goal.name;
+  v('pb-peak').textContent = goal.peakAgeDisplay;
+  v('pb-peak').style.color = isAtOrNearPeak ? 'var(--gold)' : isPastPeak ? 'var(--purple-light)' : 'var(--cyan)';
+  v('pb-sub').textContent = goal.peakNote;
+
+  // Score cards
+  v('sc-lost').textContent = lostCompounded.toLocaleString() + ' hrs';
+  v('sc-capacity').textContent = avgCapacity + '%';
+  v('sc-gain').textContent = gain1yr.toLocaleString() + ' hrs';
+  v('sc-gain-sub').textContent = levelLabel(gain1yr, selectedGoal) + ' level in 1 year';
+
+  // Verdict
+  var vBg, vColor, vMsg;
+  if (isAtOrNearPeak) {
+    vBg='var(--gold-bg)'; vColor='var(--gold)';
+    vMsg = 'You\'re at or near your peak capacity for ' + goal.name.toLowerCase() + ' ('+avgCapacity+'% of peak). Waiting longer genuinely costs you. Starting today at '+hoursPerWeek+' hours/week, you\'d reach '+levelLabel(gain5yr, selectedGoal).toLowerCase()+' level within 5 years — and the window where you\'re optimally positioned is now.';
+  } else if (avgCapacity >= 70) {
+    vBg='var(--cyan-bg)'; vColor='var(--cyan)';
+    vMsg = 'You\'re at '+avgCapacity+'% of peak capacity — well within the window where starting today makes strong sense. The '+delay+' years of delay has already cost you the equivalent of '+lostCompounded.toLocaleString()+' compounded hours of progress. Don\'t compound that further.';
+  } else {
+    vBg='var(--purple-bg)'; vColor='var(--purple-light)';
+    vMsg = 'Your capacity for '+goal.name.toLowerCase()+' is at '+avgCapacity+'% of peak — but this doesn\'t mean you can\'t make meaningful progress. '+goal.learningNote+' At '+hoursPerWeek+' hours/week from today, you\'d reach '+levelLabel(gain5yr, selectedGoal).toLowerCase()+' level within 5 years.';
+  }
+  var ve = v('verdict');
+  ve.style.background = vBg; ve.style.color = vColor; ve.style.borderColor = vColor + '44';
+  ve.textContent = vMsg;
+
+  // Main chart
+  var chartLabels = [], thenData = [], todayData = [], peakData = [];
+  var horizon = Math.max(15, delay + 10);
+  for (var yr=0; yr<=horizon; yr++) {
+    chartLabels.push('Yr +'+ yr + ' (age '+(age+yr)+')');
+    // "Then" — started delay years ago, so already has delay years of progress
+    var thenYrs = yr + delay;
+    var thenCap = avgCapacity / 100;
+    thenData.push(compoundHours(hoursPerWeek, thenYrs, goal.compoundRate, thenCap, motivation * expBonus));
+    // "Today" — starting now
+    todayData.push(compoundHours(hoursPerWeek, yr, goal.compoundRate, avgCapacity/100, motivation * expBonus));
+    // Peak capacity line (what optimal-age person would have)
+    peakData.push(compoundHours(hoursPerWeek, yr, goal.compoundRate, 1.0, motivation * expBonus));
+  }
+
+  if (mainChart) mainChart.destroy();
+  mainChart = new Chart(v('mainChart'), {
+    type: 'line',
+    data: {
+      labels: chartLabels,
+      datasets: [
+        { label:'If started then', data:thenData, borderColor:'#f06060', backgroundColor:'rgba(240,96,96,0.06)', borderWidth:2, pointRadius:0, fill:true, tension:0.4 },
+        { label:'Starting today', data:todayData, borderColor:'#c0a0ff', backgroundColor:'rgba(192,160,255,0.08)', borderWidth:2.5, pointRadius:0, fill:true, tension:0.4 },
+        { label:'Peak capacity', data:peakData, borderColor:'#f0b040', backgroundColor:'transparent', borderWidth:1.5, borderDash:[5,4], pointRadius:0, fill:false, tension:0.4 }
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:function(ctx){ return ctx.dataset.label+': '+ctx.parsed.y.toLocaleString()+' compounded hrs'; } } } },
+      scales:{
+        y:{ ticks:{ callback:function(val){ return val>=1000?(val/1000).toFixed(1)+'k':val; }, font:{size:11}, color:'var(--text3)' }, grid:{ color:'rgba(200,180,255,0.05)' } },
+        x:{ ticks:{ font:{size:10}, color:'var(--text3)', maxTicksLimit:8 }, grid:{display:false} }
+      }
+    }
+  });
+
+  // Dimensions
+  v('dim-title').textContent = 'How age affects your capacity for ' + goal.name.toLowerCase();
+  v('dim-intro').textContent = goal.learningNote;
+  var dimHtml = '';
+  for (var di=0; di<goal.dims.length; di++) {
+    var dim = goal.dims[di];
+    var yourPct = dimCapacity(age, dim.peakAge);
+    var barColor = yourPct >= 85 ? '#30c070' : yourPct >= 70 ? '#40c0d0' : yourPct >= 55 ? '#f0b040' : '#f06060';
+    dimHtml += '<div class="dim-card">' +
+      '<div class="dc-title">'+dim.name+'</div>' +
+      '<div class="dc-bar-wrap">' +
+        '<div class="dc-bar-fill" style="width:'+yourPct+'%;background:'+barColor+'"></div>' +
+      '</div>' +
+      '<div class="dc-labels"><span>0%</span><span>Peak (age '+dim.peakAge+')</span><span>100%</span></div>' +
+      '<div class="dc-your" style="color:'+barColor+'">You: '+yourPct+'% of peak</div>' +
+      '<div style="font-size:11px;color:var(--text3);margin-top:.2rem">'+dim.note+'</div>' +
+    '</div>';
+  }
+  v('dim-grid').innerHTML = dimHtml;
+
+  // Compound table
+  var scenarios = [
+    { label:'Started '+delay+' year'+(delay!==1?'s':'')+' ago', years: delay + 5, isDelayed: true },
+    { label:'Start today', years: 5, isDelayed: false, highlight: true },
+    { label:'Wait 1 more year', years: 4, isDelayed: false, extra: 1 },
+    { label:'Wait 2 more years', years: 3, isDelayed: false, extra: 2 },
+    { label:'Wait 5 more years', years: 0, isDelayed: false, extra: 5 }
+  ];
+
+  var tbHtml = '';
+  var baseHrs = compoundHours(hoursPerWeek, 5, goal.compoundRate, avgCapacity/100, motivation * expBonus);
+  for (var s=0; s<scenarios.length; s++) {
+    var sc = scenarios[s];
+    var capAdj = sc.isDelayed ? avgCapacity/100 : Math.max(0.4, (avgCapacity - (sc.extra||0)*1.5) / 100);
+    var hrs = compoundHours(hoursPerWeek, sc.years, goal.compoundRate, capAdj, motivation * expBonus);
+    var cost = s === 0 ? '—' : s === 1 ? 'Baseline' : '-' + Math.round((baseHrs - hrs) / baseHrs * 100) + '% vs today';
+    var costColor = s <= 1 ? 'var(--text2)' : 'var(--red)';
+    tbHtml += '<tr'+(sc.highlight?' class="highlight"':'')+'>'+
+      '<td>'+(sc.highlight?'⭐ ':'')+sc.label+'</td>'+
+      '<td>'+Math.round(hoursPerWeek * 52 * (sc.isDelayed ? sc.years : sc.years + (sc.extra||0))).toLocaleString()+'</td>'+
+      '<td>'+levelLabel(hrs, selectedGoal)+'</td>'+
+      '<td style="color:'+costColor+'">'+cost+'</td>'+
+    '</tr>';
+  }
+  v('table-body').innerHTML = tbHtml;
+}
+</script>
+</body>
+</html>
