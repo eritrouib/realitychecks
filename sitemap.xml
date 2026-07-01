@@ -78,4 +78,11 @@
     <priority>0.9</priority>
   </url>
 
+  <url>
+    <loc>https://realitychecks.app/compounding/</loc>
+    <lastmod>2026-06-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
 </urlset>
